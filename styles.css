@@ -7,6 +7,15 @@ body {
 	color: #DDD;
 }
 
+main {
+	position: relative;
+	width: 70%;
+	margin-left: 220px;
+	margin-right: 10%;
+	font-size: 20px;
+	padding-bottom: 600px;
+}
+
 a {
 	color: #82AAA3;
 }
@@ -20,7 +29,6 @@ nav {
 	color: #999;
 	background-color: #15212A;
 	font-size: 20px;
-	overflow-y: scroll;
 	top: 0;
 	bottom: 0;
 	left: 4px;
@@ -72,20 +80,9 @@ pre code {
 	display: block;
 	font-size: 15px;
 	background-color: #18262F;
-	overflow-x: scroll;
 	padding-top: 15px;
 	padding-bottom: 15px;
 	padding-left: 15px;
-}
-
-main {
-	position: relative;
-	width: 70%;
-	margin-left: 220px;
-	margin-right: 10%;
-	font-size: 20px;
-	overflow-y: scroll;
-	padding-bottom: 600px;
 }
 
 footer {
