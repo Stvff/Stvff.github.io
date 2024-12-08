@@ -13,6 +13,7 @@ Buildfolder ← "build/"
 )
 
 # writing
+&fmd Buildfolder
 ⍚(⊂ Buildfolder)
 ≡(⍚&fwa)
 
