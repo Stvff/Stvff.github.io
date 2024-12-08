@@ -1,0 +1,65 @@
+<h1>ArbAsm</h1>
+<p>
+	ArbAsm is my first language project that got to a usable state.</br>
+	It is an assembly-styled scripting language for arbitrary precision integer arithmetic, written in C.
+	'Arbitrary precision' means that the numbers in ArbAsm can have any amount of digits (as long as memory permits).
+</p><p>
+	The interpreter is a single (portable) executable, which can either run a REPL, or run ArbAsm source files directly.
+	Source files are simple text files, with the <code>.aasm</code> extension.
+	Its <a target="_blank" href="https://github.com/Stvff/ArbAsm">GitHub page</a> has a description of installation and usage,
+	<a target="_blank" href="https://github.com/Stvff/ArbAsm/tree/master/scripts">a lot of sample programs</a>, and even a relatively extensive
+	<a target="_blank" href="https://github.com/Stvff/ArbAsm/wiki/Standard-library-glossary">wiki page</a>.<br/>
+	Here's some ArbAsm code that does a simple benchmark:
+<pre><code class="ArbAsm">set ir, 0              ; `ir` is the general purpose iteration register
+set endian, 1          ; This sets the endianness of the interpreter to big endian
+set gr1, 30 000 000    ; This is the amount of loops the program will do
+
+push time              ; Saving the value from the time register to the stack
+:speedloop             ; A label
+    inc ir
+    cmp ir, gr1
+    Cs jmp "speedloop" ; Does a jump to `speedloop`, if the previous comparison yielded a "smaller than" result
+
+print ir               ; Prints the amount of iterations that were done
+
+sub $0, time           ; Subtracts the current time from the value on top of the stack,
+mul $0, 1-             ; which was the time at the start of the loop
+
+trunc $0               ; Removes leading zeroes
+print $0               ; Prints the amount of time it took to run in seconds
+</code></pre>
+</p><p>
+	It originally started as a command line calculator tool, but it ended up growing into a scripting language,
+	wayy outside what it was intended for, so it's very clunky (and too slow) to use for actual programming.
+</p><p>
+	That being said, here are some things I have done with it (most of these can be found in the aformentioned scripts directory):
+	<ul>
+	<li>Digits of Pi calculator</li>
+	<li>MandelBrot in the command line</li>
+	<li>Rule 110</li>
+	<li>Basic MS BMP reader and writer</li>
+	<li>Basic bitmap colour filtering and image splicing</li>
+	</ul>
+	It also has some quaternion stuff, but for that to really be useful, it needed square roots,
+	for which I couldn't figure out a performant and neat method at the time.
+</p>
+<h2>Short language description</h2>
+<p>
+	The underlying machine model is as following:<br/>
+	There are a couple of general purpose registers that the user has full control over,
+	and a couple of registers that are either read-only, or that have side effects over the operation
+	of the interpreter.<br/>
+	Next to this, there are two stacks: one that you can directly push, pop and index into, and another one that
+	you can use as a sort of 'shunting yard' for the main stack.<br/>
+	There is only one type, the Number (which is a dynamic array of bytes), that can be used as a arbitrary precision integer, a string,
+	or simply as an array of bytes.
+</p><p>
+	Statements have the form of an instruction followed by its arguments, with the destination operand going first (Intel argument ordering).
+</p>
+<h2>Broader Context of the project</h2>
+<p>
+	Arbitrary precision math is a pretty well researched topic (to the point where there are FFT version of multiplication algorithms),
+	but for this project, I hadn't read up on any of that. It's all manual exploration with a noteback and some late nights.
+	Most of my arithmetic operators here have terrible computational complexity, and since it's some of my first C code, it's hard to read
+	and makes a lot of odd decisions. Nevertheless, I'm still proud with how far I was able to go with how limited it all is.
+</p>

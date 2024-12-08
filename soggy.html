@@ -1,0 +1,55 @@
+<h1>Soggy</h1>
+<p>
+	Getting pixels on the screen has become quite an involved task. A modern GPU generally doesn't really want your pixels,
+	it wants vertices and shaders and textures. For many projects, this can really get in the way from getting pixels to
+	the screen.
+</p><p>
+	This is not a novel observation; many people have made it before me, and have said many things about it, maybe
+	even tried their hand at a solution to or mitigation for this problem.
+	One such case is <a target="_blank" href="https://github.com/zserge/fenster">Fenster</a>.
+	It gives you the straightforward ability to get pixels to the screen (with some more nice utilities),
+	and it is the main inspiration for my library.
+</p><p>
+	Soggy gives the user 2 buffers: a high resolution buffer (native), and a low resolution buffer (a division of native).
+	The user can set the scale of the lowres buffer, the window title, and a few other windowing settings in a provided
+	window info (<code>Winfo</code>) struct, and from there, all that they need to get started is three functions:
+	<ul>
+	<li><code>start(&winfo)</code></li>
+	<li><code>loop(&winfo)</code></li>
+	<li><code>exit(&winfo)</code></li>
+	</ul>
+	The pixel buffers given by <code>winfo.hi</code> and <code>winfo.lo</code>, which are <code>Program_layer</code>s (simply a struct of a size vector and an rgba array).
+	The user can set a pixel value in the buffer, call <code>loop(&winfo)</code>, and it will appear on the screen!
+</p><p>
+	Of course, Soggy provides more, both in drawing utilities, as well as system information.
+	Keyboard and mouth inputs can all be found in the <code>Winfo</code> struct.
+	There are functions for drawing both a small bitfont, as well as a more proper fullsize non-monospace font.
+	There are a couple vector utily functions as well (clamps, comparisons, etc).
+</p><p>
+	Soggy is currently written in Odin, and I'm constantly adding features, but the basic project template looks like this:
+<pre><code class="Odin">import "soggy"
+
+main :: proc() {
+	raw_winfo := soggy.Winfo {
+		window_title = "name",
+		hi_init_size = {1280, 800},
+		lo_scale = 4,
+		hi_minimum_size = {600, 600},
+	}
+	if !soggy.start(winfo) do return
+	defer soggy.exit(winfo)
+	
+	for soggy.loop(winfo) {
+		if winfo.keyboard[soggy.KEY_ESC] == .press do break
+		/* do things here */
+	}
+}
+</code></pre>
+<h2>Technical Details</h2>
+<p>
+	Under the hood, it uses GLFW and OpenGL. A <code>Program_layer</code> is just used as a texture, rendering onto a single triangle (not a quad!).
+	Everything else is software rendered onto the texture (which is intended design). This is very nice for simple basic stuff, but when you're doing
+	some really complex graphics that require very high fidelity, it can get quite slow (do not underestimate how fast CPU's are nowadays though!).
+</p><p>
+	There is currently no repo that has the most up-to-date version of soggy, but <a href="drizzle">Drizzle</a> does use a version of it.
+</p>

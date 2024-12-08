@@ -1,0 +1,37 @@
+<h1>Drizzle</h1>
+A music visualizer/player
+<p>
+	I like looking at the frequency spectrum of sounds.<br/>
+	Sound is generally created with a waveform, but human ears
+	and brains convert it back to their frequency components (with some extra postprocessing).
+	Seeing a sound displayed in the same way that I experience it with my ears is really satisfying to me.
+</p><p>
+	I couldn't easily find a program that displayed what I wanted to see, so I made one myself! I took <a target="_blank" href="waterfall.html">Waterfall</a>,
+	and completely replaced every single component of it (aside from some of the FFT code, there is nothing left of Waterfall in Drizzle).
+</p>
+<figure>
+	<img class="drizzle" alt="Screenshot of drizzle with a set of songs on the right, a playbar at the bottom, and the frequency spectrum of the current song" src="assets/drizzle_ringtone.png"/>
+	<figcaption>Drizzle in action</figcaption>
+</figure>
+<p>
+	Simply drop in .wav files from your file explorer, and you can play, pause, adjust volume, and skip between tracks. Works on both Linux and Windows.
+	There is a <a target="_blank" href="https://www.github.com/Stvff/drizzle">GitHub page</a> as well, but it needs some work.
+</p>
+<h2>Technical Details</h2>
+<p>
+	For this, I created my own GUI library, <a target="_blank" href="soggy.html">Soggy</a>, which I've used for many things since.
+	The FFT has a windowing function (so less artifacting than in Waterfall), and I also wrote my own .wav file parser (adapted from the one I wrote in Vanadis).
+	The sound playback is done with MiniAudio.
+</p><p>
+	Drizzle chooses a framerate based on the sample rate and length of a song, and does FFT's during playback, continually drawing them to the screen while scrolling down.
+	The FFT is sampled in such a way that it will never fall behind, even on an <em>extremely</em> underpowered machine.
+	All past FFT's are not stored anywhere else other than rendered to the screenbuffer, so currently, there's no scrubbing through the song.
+</p>
+<h2>Future plans</h2>
+<p>
+	I started realizing later in development that I want Drizzle to be more of a music player than a visualizer, but the current architecture
+	is not aligned with that.
+	So, I should build in support for more than just .wav files, add a more elaborate file exploring/directory playing function, and add scrubbing.
+	With that last one comes the fact that I need to save all FFT'd sections somehow, and I'm currently considering doing a wavelet transform, and rendering
+	that to a texture, that a user could then scroll through at runtime. A user might even be able to export the full song's frequency data.
+</p>

@@ -1,0 +1,33 @@
+<h1>Waterfall</h1>
+<p>
+	The last project of the first year of Electrical Engineering at the University of Twente is the Transmission Project. In this project,
+	teams have to make a radio transmitter and antenna from 'scratch' (so no IC's, unless given explicit permission).
+	Provided was an ADALM Pluto SDR (A radio you can control from your computer), that we could use to see how well we were transmitting.
+</p><p>
+	My (official) role in the team was to handle the receiving with the SDR. The course provided a couple of Matlab scripts to interface with it,
+	but I didn't like Matlab a lot, and wanted proper control over the signal, instead on relying on a handful of abstracted away functions.
+</p><p>
+	So, I learned what system libraries are used to interact with such an SDR (<a target="_blank" href="https://github.com/analogdevicesinc/libiio">Libiio</a>),
+	and also how the Fast Fourier Transform worked, and created a basic waterfall display program, with the capability to control the 'focus' of the radio.
+	Such a waterfall display shows the frequency spectrum along the horizontal axis, and scrolls down with time, so that you can see what frequencies happened at what point.
+</p>
+<p> <a target="_blank" href="http://www.youtube.com/watch?v=S-KG5fY48GU">Here</a> is a video of it in action. </p>
+<figure>
+	<img alt="Screenshot of the program showing the 800MHz LTE band. It shows distinct bands of traffic." src="assets/LTE_bands.png"/>
+	<figcaption>Waterfall showing the 800MHz LTE band</figcaption>
+</figure>
+<h2>Technical Details</h2>
+<p>
+	I wrote a few C functions to interact with libiio to get the data from the SDR that Waterfall needs.
+	It then compiles and statically links that C file with the main program (written in Odin).
+	The displaying itself is done by a modified version of <a target="_blank" href="https://github.com/zserge/fenster">fenster.h</a>,
+	which is also compiled and statically linked. Finally, the FFT is handwritten in Odin.
+</p><p>
+	At the time, I didn't know a lot about FFT's (I had only just learned how they worked), so there's no windowing function, 
+	which leads to the occasional artifact. On top of that, I didn't fully grasp Libiio either, and it would crash on buffer destruction,
+	so there's a memory leak on resize.
+	Fenster is quite limited; it doesn't support resizable windows, and so neither can Waterfall.
+</p><p>
+	In short, Waterfall was mostly a quick and dirty tool for troubleshooting our transmitter+antenna (and those of other teams),
+	for which it was really great to have!
+</p>

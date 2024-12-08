@@ -1,0 +1,78 @@
+<h1>Vanadis</h1>
+<p>
+	Vanadis is a low-level, memory-oriented assembly style scripting language.<br/>
+	Its core idea is that memory is inherently typeless, and that 'type' is a property of the operations you perform on that memory.
+</p><p>
+	The interpreter is a single executable, and since Vanadis actually compiles to a custom bytecode before it runs, the interpreter
+	can do this compilation step ahead of time, and produce a bytecode file. Similarly, it can only check the code, without running or building.
+	It can check for basic errors (missing arguments, incorrect value kinds, unknown names), and gives coloured error messages with clear line and column reporting.
+	There is even a debug mode, with settable breakpoints.
+</p><p>
+	This vanadis script asks the user for a number, and calculates the fibonacci sequence upto that many iterations, after which the user can choose to print the result (as an array):
+<pre><code class="Vanadis">u8 alloc 3
+u64
+def Fibseq = 0$
+def Iterations = 2$[0]
+def Newsize = 1$!
+
+mov Fibseq, 0 + 1;
+chr print "How many iterations?\n> ", 1
+u64 input Iterations~, 0^, 0;
+
+:loop, u64
+    add Newsize, Fibseq.l, 1t
+    rsz Fibseq, Newsize
+    add Fibseq<2t>, Fibseq<0>, Fibseq<1t>*
+    dec Iterations
+
+    cmp Iterations, 0
+        Cg jmp loop
+
+chr print "Print?\nN/y> ", 1
+chr input Iterations~, 0^, 0
+cmp Iterations, "y"!
+    u64 Ce print Fibseq, 0
+
+free 3
+</code></pre>
+</p><p>
+	Vanadis was my answer to all the things I was missing in <a target="_blank" href="arbasm.html">ArbAsm.</a><br/>
+	As such, as a scripting language, it is much more powerful in many ways,
+	and while it does borrow a couple ideas in syntax and memory model, it no longer has the arbitrary precision arithmetic.
+</p><p>
+	Despite the project being much more mature than ArbAsm,
+	Vanadis' <a target="_blank" href="https://github.com/Stvff/Vanadis">GitHub page</a> does not have a complete readme,
+	or much proper documentation, which is a shame. It does have a lot of
+	<a target="_blank" href="https://github.com/Stvff/Vanadis/tree/master/scripts">scripts</a> that can be imported in other
+	Vanadis projects. Some stuff I wrote in Vanadis includes:
+	<ul>
+	<li>basic 3D vector math (including transformation matrices)</li>
+	<li>MS BMP reading and writing functions, with error reporting</li>
+	<li>Image utility functions</li>
+	<li>WAV file reading and writing functions, with error reporting</li>
+	<li>Basic wave equation simulations</li>
+	<li>Rule 110 (as is customary)</li>
+	<li>STL utility functions</li>
+	<li>STL wireframe renderer, which really deserves its own page on this website</li>
+	</ul>
+</p>
+<h2>Memory model and language description</h2>
+<p>
+	As mentioned, the core idea is that memory is inherently typeless, and that 'type' is a property of the operations you perform on that memory.<br/>
+	The fundamental data structure is the 'page', which is essentially a dynamic array of bytes.<br/>
+	Pages have an intrinsic offset that you can set and optionally index from (in both directions: negative indices are supported and accounted for).
+	When you index a page, you get a datum, the value of which is dependent on the current type of operation.
+</p><p>
+	There are no addressable registers, instead everything is indexed off of the stack. Next to the stack, there is the 'codex', which you can flip
+	pages to and from, for more elaborate stack reordering operations (comparable to a train shunting yard).
+</p><p>
+	A statement in vanadis has four parts, of which two are optional:
+<pre><code class="Vanadis">type condition instruction expression</code></pre>
+	<code>type</code> is anything from <code>u8</code>, to <code>f64</code>. If no type is given, the instruction assumes the type that was set last.
+	This means you'll often see code that just has a single type annotation at the top, with a set of instructions underneath.<br/>
+	<code>condition</code> is any of a small set of short keywords, that denote whether or not an instruction should execute if the last <code>cmp</code> (comparison)
+	operation yielded: greater than, smaller than, equal to.<br/>
+	<code>instruction</code> is any of the supported instructions that Vanadis provide, most of them basic arithmetic or logic, a couple of them IO and memory operations.<br/>
+	Finally, <code>expression</code> is the list of arguments for the instruction, which itself could be seen as tiny concatenative register machine.
+	The operators used in expressions are things like: stack indexing, page indexing, offset resetting
+</p>

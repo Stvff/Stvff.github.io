@@ -1,0 +1,79 @@
+<h1>Typesetting and Document Formatting</h1>
+<p>
+	I originally posted this as on tumblr, but decided to copy it here as well.
+</p><p>
+	Have you ever had to make a 'document'? Usually it boils down to something that gets turned into a PDF, something printable at least.
+	Generally they're not made to be adaptable to screen sizes, but rather to some standard of aspect ratio, margins, letter types etc.
+</p><p>
+	If you're not using a printing press for this (kudos if you are, please send pictures), you probably use a computer program for it.
+	For most people, this will be Word from Microsoft's Office suite (do they still market it like that?). Some people might use Google Docs,
+	and Apple probably has a comparable program. I personally call these programs 'typesetters'.
+</p>
+<h2>They suck to use.</h2>
+<p>
+	They're extremely opaque, only presenting some basic elements to the user (headers, lists, tables, etc), with no upfront indication of
+	where those elements should go, and what their sizes and margins are <em>exactly</em>. The rules for when something wraps, or moves down a line,
+	or gets moved aside, etc, are also very unclear, and because it all seems to be calculated from a single origin,
+	one small font size change can entirely mess up your project three pages down. This all is not even mentioning images (although tables got a brief mention),
+	or any formatting beyond 'wall of text with particular alignment'. When such 'advanced' formatting is possible at all, it is three times more finicky and opaque.
+</p><p>
+	People might say "Well you have to really learn a tool to get good at it!", but the typesetters in question don't present themselves as one tool with
+	a particular paradigm. They present a couple features that the typesetter's internals can do something funny with when they're used
+	(and it usually does not share your sense of humour). Learning a tool like that is extremely unnatural for people like me, because there is no
+	solid ground to stand on in terms of operational paradigm.
+</p><p>
+	There is an existing alternative to this, and that is the markup language.
+	Popular examples are HTML and Markdown, but particularly relevant here are the ones popular for use in academia, like LaTeX/TeX
+	(mostly only LaTeX, but Typst deserves an honourable mention). These are great, as they give very explicit and direct control to the user,
+	and almost every aspect of the formatting and layouting. On top of that, the languages have a (usually small) learnable core syntax.
+	In my opinion, such markup languages are superior to the common 'What You See Is What You Get' (WYSIWYG) typesetters.
+</p><p>
+	However, they're still not really great to use for layouting. They become esoteric quickly when you start looking into how things are managed,
+	with legacies going frighteningly far back. Images still move your text, or the other way around, or both.
+</p>
+<h2>Markup Languages are not the ultimate answer.</h2>
+<p>
+	While the Typesetters are built on shaky ground, the Markup Languages live too much in the dirt. Raw text is largely one-dimensional,
+	and allows for a limited second dimension for slight nuance. A markup language has to contain:
+</p><ul>
+	<li>Content positions and sizes (sometimes in 3D if you count multipage content like that)</li>
+	<li>Content text</li>
+	<li>Content colours and styles</li>
+	<li>Possible origins of the content on disk</li>
+</ul><p>
+	Most of these are not in their 'native' language, and thus a markup language will always have to sacrifice either the clarity and
+	ease of the content text, or that of the metadata text.
+</p><p>
+	(As an interesting aside, raw text languages make more sense for interactive UI, because as far as we know, ordered instructions are clearest in a linear textual format.)
+</p>
+<h2>So what now?</h2>
+<p>
+	I've thought about it a lot, and it has puzzled me for a while that doing such layouting has become so frustrating and convoluted.
+	I think the main problem (as given earlier) is how opaque it has become, and not so much that it's an inherently difficult problem.
+	It's very straightforward to do on a typewriter, for example.
+</p><p>
+	<strong>I think</strong> these typesetters should look more like either image editors, or likely better, parametric CAD design tools (at least optionally).
+</p>
+<h2>Another fun idea I had is a 'rectcut' typesetter.</h2>
+<p>
+	In it, the limits and positions of different types of content is entirely given by the arbitrary subdivision of rectangles, with layering like an image editor.
+	So, you start with your paper size, and then you (for example) give margins by subdividing in three horizontally, then vertically, and setting those boxes to required size.
+	This can be done fractionally or in absolute units (both should be possible). You could then further subdivide to make a little box just to the side,
+	which you can select as 'image content', and a box below with some info. Then the other space you can select for 'text content' or maybe you want a title,
+	so you make a box, and put in your title, etc.
+</p><p>
+	Line or page numbering, tables, headers, indentations, footers, graphics, it all becomes something that slots in way more straightforwardly.
+</p><p>
+	In my mind, this is rectilinear/axis-aligned subdivision, but one could argue there is value in expanding beyond that
+	(I have certainly seen posters and books that could use it)
+</p>
+<h2>A small disclaimer:</h2>
+<p>
+	I haven't looked at the history of typesetters or layouting/graphic design tools yet, and I don't know about all the options that are out there,
+	so do let me know if you know of something similar as some of the things I described (I believe Adobe (I cry) might have some, but I wouldn't want to use those regardless).
+</p><p>
+	All of my problems outlined are also at least a little bit a 'me-problem'. In general, it is difficult for me to adhere to someone else's workflow,
+	and such programs definitely require a certain workflow that is not my own.
+</p><p>
+	Thanks for reading!
+</p>

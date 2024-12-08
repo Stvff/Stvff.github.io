@@ -1,0 +1,69 @@
+<h1>Dive</h1>
+<p>
+	Dive is an imperative procedural language, that lives just on the edge of being a structured language,
+	and compiles to a simple bytecode (with plans for more). This means that instead of jumping to or
+	calling labels, all code blocks in Dive are named and typechecked (so you can't jump to a procedure or call a basic block)
+	Furthermore, variables are statically and strongly typed with a basic typesystem. Procedure calls are pass-by-value.
+</p><p>
+	Dive's <a target="_blank" href="https://github.com/Stvff/dive">GitHub Page</a> has a simple 'getting started' tutorial,
+	so on this page, I'll discuss some more meta aspects of its design and development.
+</p><p>
+	Here's a recursive factorial function in Dive, there is a :
+<pre><code class="Dive">import basic/print.dive;
+
+total: u64;
+total = call factorial 10;
+call println_u64 total;
+
+factorial :: (n: u64 -- m: u64) {
+    is_zero: u8;
+    is_zero = equ n 0;
+    if is_zero base_case;
+
+    m = sub n 1;
+    m = call factorial m;
+    m = mul n m;
+    return;
+
+    base_case :: {
+        m = 1;
+        return;
+    }
+}
+</code></pre>
+</p><p>
+	After doing a lot of work in <a target="_blank" href="vanadis.html">Vanadis</a>, it started to get really clear
+	to me why languages have a local stack frame with typed variables (the sort of thing you don't notice till you miss it).
+	On top of that, Vanadis was a little hard to read, and mathematical expressions were cumbersome to write.
+	Because of esoteric decisions of the interpreter and paradigm, performance was starting to become a concern as well.
+</p><p>
+	So, for Dive, I wanted clear function signatures, typed variables, scopes, proper expressions, as well as an interpreter with a bytecode so straightforward,
+	an assembly transpiler could be written after the fact. Two big inspirations for this project were Jai and Odin, and I was even thinking about
+	compile-time execution, it was not a main focus.
+</p><p>
+	Currently, there are no proper expressions yet (I've been planning a big rework with them included, but it's big and I got distracted)
+	But it does have clear function signatures, typed variables and scopes, so it gets to determine and check a lot of things at compiletime.
+	The bytecode generator is also pretty 'advanced', gathering all variables of all static scopes, and putting them all with proper alignment
+	(and thus packed) on the stack, translating variable names to stack indexing, etc.
+</p><p>
+	Also, Dive has more proper multifile compilation (not just "insert file" like C's <code>#include</code>), and can resolve symbols declared out-of-order.
+</p><p>
+	The bytecode itself is a Three Access Code, so quite simple (and therefore fast) to parse and run. It <emph>should</emph> be pretty straightforward to translate to
+	nasm assembly, but I've not yet found the time to look into it deeply, especially because other parts of the language need a lot more work first.
+	There is a unix <code>syscall</code> instruction, so code can actually interface with the OS directly for file IO, and allocators.
+</p><p>
+	I've not done a lot with Dive, it's honestly missing a lot of stuff to be usefull (no array or string literals, no structs),
+	and the main puzzle of its development ended up learning compilerdesign for this new paradigm of programming language.<br/>
+	As such, the only things I've done with it are (all of these can be found in the <a target="_blank" href="https://github.com/Stvff/dive/progams">programs folder on GitHub</a>):
+	<ul>
+	<li>Basic file IO (based on unix syscalls)</li>
+	<li>Extremely basic allocator (using mmap)</li>
+	<li>Beginnings of a printing library</li>
+	<li>fibonacci</li>
+	</ul>
+</p>
+<h2>In Conclusion</h2>
+<p>
+	Dive has some cool ideas (and it is pleasant on the eyes to me personally), but it's really deeply incomplete, and needs a lot more attention and a rethink.
+	That being said, I learned a lot of things doing it, that will be (and have already been) very useful for my <a href="triops.html">next programming language exploration</a>.
+</p>
