@@ -2,18 +2,44 @@
 	font-family: 'Noto Serif', serif;
 }
 
+:root {
+	--left-line-thickness: 4px;
+	--sidebar-width: 200px;
+	--sidebar-content-gap: 20px;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+
 body {
 	background-color: #21333F;
 	color: #DDD;
 }
 
+/* On big screens */
+@media (min-width: 650px) {
+	body {
+		/* Sidebar on the left, main page on the right */
+		display: grid;
+		grid-template-columns: calc(var(--sidebar-width) + var(--left-line-thickness)) 1fr;
+		gap: calc(var(--sidebar-content-gap) + var(--left-line-thickness));
+	}
+
+	nav {
+		margin-left: var(--left-line-thickness);
+	}
+	
+	main {
+		margin-right: 17vw;
+	}
+}
+
 main {
-	position: relative;
-	width: 70%;
-	margin-left: 220px;
-	margin-right: 10%;
 	font-size: 20px;
-	padding-bottom: 600px;
+	padding-inline: 10px;
 }
 
 a {
@@ -23,28 +49,50 @@ a:visited {
 	color: #D4BC7D;
 }
 
+nav a[target="_blank"]::after {
+	content: url("assets/newtab.svg");
+	align-self: center;
+	content-color: #FFF;
+	height: 24px;
+}
+
+nav a[target="_blank"] {
+	display: flex;
+	justify-content: space-between;
+}
+
 nav {
-	position: fixed;
-	width: 200px;
 	color: #999;
 	background-color: #15212A;
 	font-size: 20px;
-	top: 0;
-	bottom: 0;
-	left: 4px;
-	right: 0;
+}
+
+nav > * {
+	display: block;
+}
+
+nav h1 {
+	font-size: unset;
+	font-weight: unset;
+	margin: unset;
+
+	margin-inline: 3px;
+	margin-top: 7px;
+}
+
+nav > h1:first-of-type {
+	margin-top: 20px;
 }
 
 nav a {
-	display: block;
 	text-decoration: none;
 	color: #CCC;
 	background-color: #10191F;
 	margin-bottom: 3px;
-	padding-left: 10px;
-	padding-right: 10px;
+	padding-inline: 10px;
 	border-radius: 4px;
 }
+
 nav a:hover {
 	color: #FFF;
 	background-color: #1C4449;
@@ -53,27 +101,11 @@ nav a:visited {
 	color: #CCC;
 }
 
-nav a[target="_blank"]::after {
-	content:url("assets/newtab.svg");
-	content-color: #FFF;
-	float: right;
-}
-
-nav h1 {
-	font-size: unset;
-	font-weight: unset;
-	margin: unset;
-	margin-left: 3px;
-	margin-right: 3px;
-	margin-top: 7px;
-}
-
 code {
 	font-family: monospace;
 	border-radius: 4px;
 	background-color: #18262F;
-	padding-left: 3px;
-	padding-right: 3px;
+	padding-inline: 3px;
 }
 
 pre code {
@@ -83,13 +115,16 @@ pre code {
 	padding-top: 15px;
 	padding-bottom: 15px;
 	padding-left: 15px;
+	overflow-x: scroll;
 }
 
 footer {
+	padding-top: 60vh;
+	padding-bottom: 20px;
 	text-align: center;
 }
 
-img, picture, video, canvas, svg {
+img, picture /*, video, canvas, svg*/ {
 	display: block;
 	max-width: 70%;
 	margin-left: auto;

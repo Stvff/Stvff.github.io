@@ -1,4 +1,4 @@
-<h1>Soggy</h1>
+<h1 id="top">Soggy</h1>
 <p>
 	Getting pixels on the screen has become quite an involved task. A modern GPU generally doesn't really want your pixels,
 	it wants vertices and shaders and textures. For many projects, this can really get in the way from getting pixels to
@@ -30,19 +30,19 @@
 <pre><code class="Odin">import "soggy"
 
 main :: proc() {
-	raw_winfo := soggy.Winfo {
-		window_title = "name",
-		hi_init_size = {1280, 800},
-		lo_scale = 4,
-		hi_minimum_size = {600, 600},
-	}
-	if !soggy.start(winfo) do return
-	defer soggy.exit(winfo)
-	
-	for soggy.loop(winfo) {
-		if winfo.keyboard[soggy.KEY_ESC] == .press do break
-		/* do things here */
-	}
+    raw_winfo := soggy.Winfo {
+        window_title = "name",
+        hi_init_size = {1280, 800},
+        lo_scale = 4,
+        hi_minimum_size = {600, 600},
+    }
+    if !soggy.start(winfo) do return
+    defer soggy.exit(winfo)
+    
+    for soggy.loop(winfo) {
+        if winfo.keyboard[soggy.KEY_ESC] == .press do break
+        /* do things here */
+    }
 }
 </code></pre>
 <h2>Technical Details</h2>

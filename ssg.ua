@@ -9,7 +9,7 @@ Buildfolder ← "build/"
   ⍚(⊂ &fras "start.html")
 
   # appending the tail
-  ⍚(⊂ : "</main><footer><small>Copyright © current year. All rights reserved.</small></footer></body></html>")
+  ⍚(⊂ : "<footer><small>Copyright © current year. All rights reserved.</small></footer></main></body></html>")
 )
 
 # writing
