@@ -1,7 +1,7 @@
 Buildfolder ← "build/"
 
 # getting the content
-{"index" "typesetters" "arbasm" "vanadis" "dive" "triops" "waterfall" "drizzle" "soggy"}
+{"index" "typesetters" "arbasm" "vanadis" "dive" "triops" "waterfall" "wishlist" "drizzle" "soggy"}
 ⍚(⊂ : ".html")
 ⟜(⍚&fras
 
