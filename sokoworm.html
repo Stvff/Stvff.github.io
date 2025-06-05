@@ -171,7 +171,7 @@ mov r8, rax     ; r8 now contains the remainder, which is the x-coordinate of th
 </figure>
 	This means that, whenever the worm moves its head in in-field coordinates, its on-screen column coordinate does <emph>not change</emph> when:
 	<ul>
-		<li>it is on an odd row, and going topleft of bottomleft</li>
+		<li>it is on an odd row, and going topleft or bottomleft</li>
 		<li>it is on an even row, and going topright or bottomright</li>
 	</ul>
 	Luckily, the on-screen row coordinate reliably changes based on if it's going to the top of bottom, regardless of the coordinates or lateral movement.
