@@ -35,6 +35,12 @@ body {
 	main {
 		margin-right: 17vw;
 	}
+
+	.two-col {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		align-items: center;
+	}
 }
 
 main {
@@ -116,6 +122,7 @@ pre code {
 	padding-bottom: 15px;
 	padding-left: 15px;
 	overflow-x: scroll;
+	tab-size: 4;
 }
 
 footer {

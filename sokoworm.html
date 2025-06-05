@@ -207,6 +207,7 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 </p><p>
 	I designed the levels on paper in a normal grid (so essentially in-field coordinates). Converting those levels to on-screen coordinates was mostly an effort of trial-and error, moving blocks according to the above rules by hand.
 	However, at some point, I realized a formatting trick to make it easier. As an example, here is level 3:
+<div class="two-col">
 <pre><code class="nasm">level_3:
 	db 18
 				db 3, 12, 1
@@ -226,6 +227,8 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 	db 2, 14, 5
 	db 3, 15, 4
 </code></pre>
+<img alt="A screenshot of level 3" src="assets/sokoworm_level3.png" style="--aspect-ratio: 1/1"/>
+</div>
 	If you squint your eyes, you can just about make out the layout of the level. The second part (after <code>db 7</code>) gives the positions of the worm and movable blocks.
 	Since those 'first floor' coordinates are also on-screen, and because there is no z-coordinate, they are just placed at y+2, which is the graphical equivalent.
 </p>
