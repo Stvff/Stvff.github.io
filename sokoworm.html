@@ -88,7 +88,7 @@ program_header:
 	<ul>
 		<li><code>write_entire_file</code>: Ended up changing into <code>write_image</code>, since I didn't need more file IO.</li>
 		<li><code>free</code>: I didn't really see a reason to free any memory for this particular program, in service of smaller codesize.</li>
-		<li><code>sleep_ms</code>: Would have been useful for animations, because of reasons I will go into later, but I never ended up having any.</li>
+		<li><code>sleep_ms</code>: Would have been useful for animations (because image readers don't like it when a file changes very fast), but I never ended up having any.</li>
 	</ul>
 	Notable is that some of these procedures are way nicer than their equivalent libc functions, since there are no zero-terminated strings anywhere.
 	Unlike C, my program has sized arrays as a basic datatype. The size of a buffer is stored directly in front of that buffer, one byte in front if it's a string, 8 bytes if it is dynamically allocated.
@@ -101,11 +101,12 @@ program_header:
 	and doing network calls (there are syscalls for this) to the computer's X11 server, and this would all be at least several handfulls of code.
 </p><p>
 	I did not want to keep the game to just the terminal, since doing terminal rendering relies on somewhat arcane escape codes, and strange methods of operation in general.
-	So, I opted for the next best thing: rendering to an image.<br/>
+	So, I opted for the next best thing: rendering to an image. The user would simply open the rendered image in an image viewer, and I'd have to do no windowing.
+	Of course, the image viewer needs to be capable of automatically reloading when the image on disk changes, but a reasonable section of image viewers does have this property.<br/>
 	The simplest (and oldest, for portability's sake) image format I was aware of, was <a target="_blank" href="https://en.wikipedia.org/wiki/Netpbm#File_formats">PPM</a>.
 	the PPM header for binary image data with 24 bits per pixel is ~15 Bytes. My other option was <a target="_blank" href="https://en.wikipedia.org/wiki/BMP_file_format">MS BMP</a>.
 	Much more platforms/image viewers support this file format, but it has a larger header, and, more annoyingly, image data needs to be aligned to 4 bytes per row of pixels.
-	At the time, I chose the easy way out, but in hindsight, the portability <em>might</em> have been worth it.
+	At the time, I chose the easy way out, but in hindsight, the portability of BMP <em>might</em> have been worth it.
 </p><p>
 	However, the user input is just kept to the terminal. The program reads two bytes at a time from stdin (the command letter and a newline), and selects what to do from there.
 	A fun side-effect of this is that stdin is not fully cleared after those two bytes are read, which means the player can input multiple moves at the same time, as long as they are seperated by a space or other character.
@@ -114,18 +115,18 @@ program_header:
 <p>
 	At a high level, the renderer draws blocks from back to front, in two passes.
 	The first and second pass run the same code, and render the 'ground floor' and 'first floor' of the level respectively.
-	Per pass, the renderer essentially divides in strips that overlap eachother, from top to bottom. Every strip has, it goes through all pixels in that strip, and checks what block coordinate that pixel belongs to.
+	Per pass, the renderer essentially divides in strips that overlap eachother, from top to bottom. For every strip, it goes through all pixels in that strip, and checks what block coordinate that pixel belongs to.
 	The 'y-coordinate' of the block is simply the strip number, and the 'x-coordinate' is calculated like so:
-<pre><code>	mov rax, r14	; rax now contains the pixel column number (which is kept track of in r14), this will be the dividend
-	mov rdx, 0		; rdx is set to zero because x86 division is Very Strange
-	mov rcx, BLOCK	; rcx now contains the pixel width of a block (which is a constant set elsewhere), this will be the divisor
-	div ecx			; the actual division, which puts the quotient in rdx, and the remainder in rax
-	mov r8, rax		; r8 now contains the remainder, which is the x-coordinate of the block that this pixel is in
+<pre><code>mov rax, r14    ; rax now contains the pixel column number (which is kept track of in r14), this will be the dividend
+mov rdx, 0      ; rdx is set to zero because x86 division is Very Strange
+mov rcx, BLOCK  ; rcx now contains the pixel width of a block (which is a constant set elsewhere), this will be the divisor
+div ecx	        ; the actual division, which puts the quotient in rdx, and the remainder in rax
+mov r8, rax     ; r8 now contains the remainder, which is the x-coordinate of the block that this pixel is in
 </code></pre>
 	As quick aside, this is the only <code>div</code> instruction in the entire program, it's really cumbersome to use.<br/>
 </p><p>
-	Anyway, the remainder is remembered, and the the program goes on to think about where the pixel is in the current block: on the top, or on the side?
-	To do this, I calculate the y-value (in pixels) of 3 triangle waves.
+	Anyway, the remainder is remembered, and the program goes on to think about where the pixel is in the current block: on the top, or on the side?
+	To do this, it calculates the y-value (in pixels) of 3 triangle waves.
 <figure>
 	<img alt="Graphic of three coloured triangle waves. From top to bottom, they are labeled 1, 2 and 3, and are green, magenta and orange respectively. All three have the same rate, though line 2 and 3 are inverted, and line 2 touches its peaks with line 1's troughs." src="assets/intra-ribbon.png"/>
 	<figcaption>The three triangle waves within a strip, here drawing out the silhouettes of two blocks</figcaption>
@@ -156,7 +157,7 @@ program_header:
 		<li>a set of pushable blocks</li>
 		<li>the next level</li>
 	</ol>
-	As an aside, because these levels are given in the executable, they cannot be resized, so the number of blocks on either floor has to stay constant.
+	Because these levels are given in the executable, they cannot be resized, so the number of blocks on either floor has to stay constant.<br/>
 	The coordinates here are all in on-screen coordinates (the entire game deals with them as such), which themselves deserve a proper description.
 </p><p>
 	First of all, there are two possible coordinate systems: the on-screen one, and the in-field one.<br/>
@@ -174,7 +175,19 @@ program_header:
 		<li>it is on an even row, and going topright or bottomright</li>
 	</ul>
 	Luckily, the on-screen row coordinate reliably changes based on if it's going to the top of bottom, regardless of the coordinates or lateral movement.
-	Any time the worm head has to move, or a block has to move, these rules are applied in approximately 8 instructions (which is a lot for a +x +y in my book).
+	Any time the worm head has to move, or a block has to move, these rules are applied in approximately 8 instructions, which looks like this:
+<pre><code>; r8 contains xpos, r9 ypos (both in on-screen coordinates)
+; rcx contains xdir, and rdx ydir (both in in-field coordinates)
+mov r10, r9      ; r10 now contains ypos
+cmp rcx, -1      ; if xdir == -1, invert the behaviour wrt if it wasn't
+jne skip_inversion_head_mvmt
+	not r10      ; this is that inversion
+skip_inversion_head_mvmt:
+and r10, 1       ; this checks for evenness (or oddness, in the case of xdir == -1) of ypos
+imul r10, rcx    ; the resulting boolean is multiplied with xdir
+add r8b, r10b    ; xpos is updated with our updated xdir
+add r9b, dl      ; ypos is updated, no changes need to be done to ydir
+</code></pre>
 </p><p>
 	I designed the levels on paper in a normal grid (so essentially in-field coordinates). Converting those levels to on-screen coordinates was mostly an effort of trial-and error, moving blocks according to the above rule.
 	However, at some point, I realized a formatting trick to make it easier. As an example, here is level 3:
@@ -196,9 +209,9 @@ program_header:
 	db 1, 13, 5
 	db 2, 14, 5
 	db 3, 15, 4
-</pre></code>
+</code></pre>
 	If you squint your eyes, you can just about make out the layout of the level. The second part (after <code>db 7</code>) gives the positions of the worm and movable blocks.
-	Since those 'first floor' coordinates are also in on-screen, and because there is no z-coordinate, they are just placed at y+2, which is the graphical equivalent.
+	Since those 'first floor' coordinates are also on-screen, and because there is no z-coordinate, they are just placed at y+2, which is the graphical equivalent.
 </p>
 	<h3>Undo</h3>
 <p>
