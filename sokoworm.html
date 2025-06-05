@@ -3,9 +3,25 @@
 	Sokoworm is my first 'published' 'videogame' (<a target="_blank" href="https://vstvff.itch.io/sokoworm">it has an itch.io page</a>).<br/>
 	It is a <a target="_blank" href="https://en.wikipedia.org/wiki/Sokoban">sokoban</a> (blockpusher), where the pusher's body snakes around behind the player.
 	I made it for the <a target="_blank" href="https://itch.io/jam/4mb-jam-2025">2025 4MB gamejam</a>, and the executable is only 2488 Bytes, so it has some odd UX decisions.<br/>
-	On this page, I want to document what I did, how it works, and how I could improve it.
+	On this page, I want to document what I did and how it works.
 </p>
-<h2>Quick preamble</h2>
+<h2>Table of contents</h2>
+<ul>
+	<li><a href="#preamble">Quick preamble</a></li>
+	<li><a href="#details">Technical details</a></li>
+	<ul>
+		<li><a href="#header">Program header</a></li>
+		<li><a href="#runtime">Runtime and standard library</a></li>
+		<li><a href="#IO">User input and windowing</a></li>
+		<li><a href="#graphics">Graphics</a></li>
+		<li><a href="#coordinates">Level representation and coordinate systems</a></li>
+		<li><a href="#undo">Undo</a></li>
+		<li><a href="#ordering">Movement logic and ordering</a></li>
+	</ul>
+	<li><a href="#closing">Closing thoughts</a></li>
+</ul>
+
+<h2 id="preamble">Quick preamble</h2>
 <p>
 	I had learned around march of 2025 that there would be a 4MB gamejam in may (it only happens every other year). Since for a while before then,
 	I had been working on an assembly macro programming language, <a target="_blank" href="https://Stvff.github.io/triops.html#top">Triops</a>, so the plan was to write a game using that.
@@ -15,8 +31,8 @@
 	However, the moment I said I wasn't going to do it (3 days before the end of the deadline), I got the conviction to simply do the whole project in nasm assembly.
 	I did not yet have a solid plan for what sort of game I wanted, but at least I started.
 </p>
-<h2>Basic techniques and buildup</h2>
-	<h3>Program header</h3>
+<h2 id="details">Technical details</h2>
+	<h3 id="header">Program header</h3>
 <p>
 	The basis of the program is a custom ELF-header. At some point during my research into how to write programs in assembly,
 	I stumbled on a <a tag="_blank" href="https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html">great post about making tiny linux executables</a>,
@@ -70,7 +86,7 @@ program_header:
 	But more pressingly, since the executable section is also writeable, programs with this header are inherently more vulnerable to exploits of that nature: code insertion.
 	So don't write a critical program like this! Just accept the minimum 4kb executable size for actual applications.
 </p>
-	<h3>Runtime and standard library</h3>
+	<h3 id="runtime">Runtime and standard library</h3>
 <p>
 	Next, I did not want to deal at all with the C runtime, which is often considered a mandatory dependency <a target="_blank" href="https://jangafx.com/insights/linux-binary-compatibility">because of how linux is constructed</a>.
 	This is true for very serious large programs, but for small programs, it's not really true. Linux quite seriously maintains a consistent set of <a target="_blank" href="https://en.wikipedia.org/wiki/System_call">syscalls</a>,
@@ -93,7 +109,7 @@ program_header:
 	Notable is that some of these procedures are way nicer than their equivalent libc functions, since there are no zero-terminated strings anywhere.
 	Unlike C, my program has sized arrays as a basic datatype. The size of a buffer is stored directly in front of that buffer, one byte in front if it's a string, 8 bytes if it is dynamically allocated.
 </p>
-	<h3>User input and windowing</h3>
+	<h3 id="IO">User input and windowing</h3>
 <p>
 	There is one large downside to not having a C runtime: dynamically linking to a library at runtime won't normally simply work. Most libraries expect a C runtime, which you can't always deliver.
 	An example of such a library is xlib, or anything opengl, or basically everything that helps you do windowing (to my knowledge).<br/>
@@ -111,7 +127,7 @@ program_header:
 	This all being said, the user input is just kept to the terminal. The program reads two bytes at a time from stdin (the command letter and a newline), and selects what to do from there.
 	A fun side-effect of this is that stdin is not fully cleared after those two bytes are read. This means the player can input multiple moves at the same time, as long as they are seperated by a space or other character.
 </p>
-	<h3>Graphics</h3>
+	<h3 id="graphics">Graphics</h3>
 <p>
 	At a high level, the renderer draws blocks from back to front, in two passes.
 	The first and second pass run the same code, and render the 'ground floor' and 'first floor' of the level respectively.
@@ -145,7 +161,7 @@ mov r8, rax     ; r8 now contains the remainder, which is the x-coordinate of th
 	On every odd strip, the drawing is offset by half a block's width (to the right), so that they nicely fit inbetween the even strips of blocks.
 	This is a very messy way to make these things align, and made the block coordinate system immensely hard to work with. Speaking of:
 </p>
-	<h3>Level representation and coordinate systems</h3>
+	<h3 id="coordinates">Level representation and coordinate systems</h3>
 <p>
 	Levels are stored in memory as follows:
 	<ol>
@@ -213,7 +229,7 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 	If you squint your eyes, you can just about make out the layout of the level. The second part (after <code>db 7</code>) gives the positions of the worm and movable blocks.
 	Since those 'first floor' coordinates are also on-screen, and because there is no z-coordinate, they are just placed at y+2, which is the graphical equivalent.
 </p>
-	<h3>Undo</h3>
+	<h3 id="undo">Undo</h3>
 <p>
 	Before any moves are read and processed, the game saves the entire current level to a (newly allocated) buffer. The pointer to that buffer is then stored another (more static) buffer.
 	There are no free or realloc procedures, so there is an undo limit of ~256, which I reckoned was good enough.
@@ -225,7 +241,7 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 	A lot of code is currently spent of shifting buffers, and copying over double pointers. A <code>realloc</code> procedure would have cleaned all of that up.
 	On top of that, the extra level of indirection was nearly impossible to debug.
 </p>
-	<h3>Movement logic and ordering</h3>
+	<h3 id="ordering">Movement logic and ordering</h3>
 <p>
 	Moves are performed in-place on the level, so ordering of what needs to happen before what is very important.<br/>
 	Earlier, I mentioned a procedure that would give information on a block at a given location.
@@ -246,11 +262,11 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 </p><p>
 	Finally, the head of the worm updates, the program jumps back up to the start of the gameloop.
 </p>
-<h2>Closing thoughts</h2>
+<h2 id="closing">Closing thoughts</h2>
 <p>
 	Since development was very rushed, every day since the end of the jam, I've had realizations about how every part of this could have been done smaller, faster, more robustly, and more user-friendly.
 	I won't go into all details about that quite yet (maybe at a later date), because I'd honestly rather have spent more time designing puzzles. That is to say, I think I did good work for the time and effort I put in.
-	I'm very happy with the final result, even if it isn't the smallest it can be (or with as much content as it should have). I hope you give it a try!<br/>
+	I'm very happy with the final result, even if it isn't the smallest it can be (or with as much content as it should have). <a target="_blank" href="https://vstvff.itch.io/sokoworm">I hope you give it a try!</a><br/>
 	I think this concept has a lot of potential for a starting game designer like myself, maybe I'll polish it up a ton and release a steam version with actual windowing and a whole heap more puzzles :P
 </p>
 <!--
