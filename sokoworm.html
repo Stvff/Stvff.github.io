@@ -76,12 +76,12 @@ program_header:
 	This is true for very serious large programs, but for small programs, it's not really true. Linux quite seriously maintains a consistent set of <a target="_blank" href="https://en.wikipedia.org/wiki/System_call">syscalls</a>,
 	with which userspace programs can tell the kernel to do things for them. The C runtime still lives in userspace, so a committed programmer can make their program do anything glibc can.
 </p><p>
-	So, I wrote the absolute bare minimum for a program that has to some dynamic work. All these procedures are very short since they're super thin wrappers over syscalls.
+	So, I wrote the absolute bare minimum for a program that has to do some dynamic work. All these procedures are very short since they're super thin wrappers over syscalls.
 	<ul>
 		<li><code>read_input</code>: Reading input from stdin, into a (sized) buffer.</li>
 		<li><code>print_string</code>: Writing a (sized) buffer to stdout.</li>
 		<li><code>alloc</code>: Only really calls mmap (which maps a page in your program's virtual memory), and keeps track of the buffer's size.</li>
-		<li><code>exit</code>: Is basically a requirement if you don't want to crash at the end up your program.</li>
+		<li><code>exit</code>: Is basically a requirement if you don't want to crash at the end of your program.</li>
 		<li><code>write_image</code>: Writes a pre-formatted pixel data buffer to a PPM file (more on this later).</li>
 	</ul>
 	I also wrote some basic utilities that I didn't end up using at all:
