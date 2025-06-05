@@ -104,7 +104,7 @@ program_header:
 	So, I opted for the next best thing: rendering to an image. The user would simply open the rendered image in an image viewer, and I'd have to do no windowing.
 	Of course, the image viewer needs to be capable of automatically reloading when the image on disk changes, but a reasonable section of image viewers does have this property[citation needed].<br/>
 	The simplest (and oldest, for portability's sake) image format I was aware of, was <a target="_blank" href="https://en.wikipedia.org/wiki/Netpbm#File_formats">PPM</a>.
-	the PPM header for binary image data with 24 bits per pixel is ~15 Bytes. My other option was <a target="_blank" href="https://en.wikipedia.org/wiki/BMP_file_format">MS BMP</a>.
+	The PPM header for binary image data with 24 bits per pixel is ~15 Bytes. My other option was <a target="_blank" href="https://en.wikipedia.org/wiki/BMP_file_format">MS BMP</a>.
 	Much more platforms/image viewers support BMP, but it has a larger header and, more annoyingly, image data needs to be aligned to 4 bytes per row of pixels.
 	At the time, I chose the easy way out. In hindsight, the portability of BMP <em>might</em> have been worth it.
 </p><p>
@@ -250,8 +250,7 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 <p>
 	Since development was very rushed, every day since the end of the jam, I've had realizations about how every part of this could have been done smaller, faster, more robustly, and more user-friendly.
 	I won't go into all details about that quite yet (maybe at a later date), because I'd honestly rather have spent more time designing puzzles. That is to say, I think I did good work for the time and effort I put in.
-	I'm very happy with the final result, even if it isn't the smallest it can be (or with as much content as it should have).
-	It's still way smaller than the vast majority of similar games out there, and has a lot going for it. I hope you give it a try!<br/>
+	I'm very happy with the final result, even if it isn't the smallest it can be (or with as much content as it should have). I hope you give it a try!<br/>
 	I think this concept has a lot of potential for a starting game designer like myself, maybe I'll polish it up a ton and release a steam version with actual windowing and a whole heap more puzzles :P
 </p>
 <!--
