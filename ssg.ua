@@ -1,12 +1,19 @@
 Buildfolder ← "build/"
 
-# getting the content
-{"index" "typesetters" "arbasm" "vanadis" "dive" "triops" "waterfall" "sokoworm" "wishlist" "drizzle" "soggy"}
+# the titles
+{"Stvff stuff" "ArbAsm" "Vanadis" "Dive" "Triops" "Drizzle" "Waterfall" "Sokoworm" "Math wishlist" "Thoughts on Typesetters" "Soggy"}
+# the descriptions
+{"My portfolio website" "Arbitrary arithmetic scripting language" "Memory-oriented assembly style scripting language" "Typed language experiment" "Assembly macro language" "Music spectrograph" "Radio Spectrograph" "A game in 2488 bytes" "Unsolved math problems" "Is this the best we have?" "Simple windowing library"}
+# the content
+{"index" "arbasm" "vanadis" "dive" "triops" "drizzle" "waterfall" "sokoworm" "wishlist" "typesetters" "soggy"}
 ⍚(⊂ : ".html")
 ⟜(⍚&fras
 
   # prepending the head and navbar
-  ⍚(⊂ &fras "start.html")
+  ⍚(⊂ &fras "start2.html")
+  ⍚(⊂⊂⊃⊂ "\"/>" "<meta name=\"description\" content=\"" :)
+  ⍚(⊂⊂⊃⊂ "</title>" "<title>" :)
+  ⍚(⊂ &fras "start1.html")
 
   # appending the tail
   ⍚(⊂ : "<footer><small>Copyright © current year. All rights reserved.</small></footer></main></body></html>")
