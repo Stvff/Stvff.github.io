@@ -1,0 +1,246 @@
+<h1 id="top">Sokoworm</h1>
+<p>
+	Sokoworm is my first 'published' 'videogame' (<a target="_blank" href="https://vstvff.itch.io/sokoworm">it has an itch.io page</a>).<br/>
+	It is a <a target="_blank" href="https://en.wikipedia.org/wiki/Sokoban">sokoban</a> (blockpusher), where the pusher's body snakes around behind the player.
+	I made it for the <a target="_blank" href="https://itch.io/jam/4mb-jam-2025">2025 4MB gamejam</a>, and the executable is only 2488 Bytes, so it has some odd UX decisions.<br/>
+	On this page, I want to document what I did, how it works, and how I could improve it.
+</p>
+<h2>Quick preamble</h2>
+<p>
+	I had learned around march that there would be a 4MB gamejam in may (it only happens every other year), and had been working on an assembly macro programming language,
+	<a target="_blank" href="https://Stvff.github.io/triops.html#top">Triops</a>, since for a while before then, so the plan was to write a game using that.
+	Work intermittently continued on Triops upto the middle of may (when the gamejam was already half underway), but eventually ground to a halt because of illness.
+	Triops was close, but not quite in a state to take on a project like this, so I had given up on the idea to participate.
+</p><p>
+	However, as fate would have it, the moment I said I wasn't going to do it (3 days before the end of the deadline), I got the conviction to simply do the whole project in nasm assembly.
+	I did not yet have a solid plan for what sort of game I wanted, but at least I started.
+</p>
+<h2>Basic techniques and buildup</h2>
+	<h3>Program header</h3>
+<p>
+	The basis of the program is a custom ELF-header. At some point during my research into how to write programs in assembly,
+	I stumbled on a <a tag="_blank" href="https://www.muppetlabs.com/~breadbox/software/tiny/teensy.html">great post about making tiny linux executables</a>,
+	so I used that same idea, but converted it to 64-bit using the <a target="_blank" href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF wikipedia page</a>.
+	The choice to use 64-bit does not completely serve smaller executables, but it is what I'm most comfortable with.
+</p><p>
+	This is the header:
+	<pre><code class="nasm">; This is a custom ELF header for smaller executables. It is less memorysafe.
+BITS 64
+	org     0x08048000
+elf_header:
+	; e_ident
+	db 0x7F, "ELF"
+	db 2		; 64 bit
+	db 1		; little endian
+	db 1		; version
+	db 0		; ABI: UNIX system V (3 is GNU/Linux, but I'm not using any GNU)
+	db 0		; more ABI (also dynlinker ABI for glibc?)
+	db 0, 0, 0, 0, 0, 0, 0 ; 7 zeroes to pad
+
+	dw 2		; e_type: executable
+	dw 0x3E		; e_machine: AMD X86-64
+	dd 1		; e_version
+	dq _start		; e_entry
+	dq program_header - $$		; e_phoff: program header offset (should be 0x40)
+	dq 0		; e_shoff: section header offset (we don't have this rn)
+	dd 0		; e_flags
+	dw 0x40		; e_ehsize: elf header size (should be 0x40 for 64 bit)
+	dw 0x38		; e_phentsize: program header entry size (should be 0x38 for 64 bit)
+	dw 1		; e_phnum: number of program header entries
+	dw 0		; e_shentsize: section header stuff. we don't have it, so it's all zero
+	dw 0		; e_shnum
+	dw 0		; shstrndx
+
+program_header:
+	dd 1		; p_type: loadable segment (PT_LOAD)
+	dd 0x7		; p_flags: executable (1) + writeable (2) + readable (4)
+	dq 0		; p_offset (I think this is offset from _start)
+	dq $$		; p_vaddr: $$ is that org number at the top, which is where it'll get loaded in
+	dq $$		; p_paddr (I'm pretty sure this is ignored)
+	dq filesize		; p_filesz
+	dq filesize		; p_memsz
+	dq 0x1000		; p_align: align to linux page size (4096 bytes)
+</code></pre>
+	The reason that this header makes the executable small, is approximately twofold:
+	<ol>
+		<li>There is only one section with read, write and execute permissions, instead of one executable section and one writable section (which has more padding).</li>
+		<li>There is no linking or debugging information.</li>
+	</ol>
+	Some antivirus scanners might not like this, since virtually every executable generated nowadays has at least a section header table, so that's somewhat of an assumption.<br/>
+	But more pressingly, since the executable section is also writeable, programs with this header are inherently more vulnerable to exploits of that nature: code insertion.
+	So don't write a critical program like this! Just accept the minimum 4kb executable size for actual applications.
+</p>
+	<h3>Runtime and standard library</h3>
+<p>
+	Next, I did not want to deal at all with the C runtime, which is often considered a mandatory dependency <a target="_blank" href="https://jangafx.com/insights/linux-binary-compatibility">because of how linux is constructed</a>.
+	This is true for very serious large programs, but for small programs, it's not really true. Linux quite seriously maintains a consistent set of <a target="_blank" href="https://en.wikipedia.org/wiki/System_call">syscalls</a>,
+	with which userspace programs can tell the kernel to do things for them. The C runtime still lives in userspace, so a committed programmer can make their program do anything glibc can.
+</p><p>
+	So, I wrote the absolute bare minimum for a program that has to some dynamic work. All these procedures are very short since they're super thin wrappers over syscalls.
+	<ul>
+		<li><code>read_input</code>: Reading input from stdin, into a (sized) buffer.</li>
+		<li><code>print_string</code>: Writing a (sized) buffer to stdout.</li>
+		<li><code>alloc</code>: Only really calls mmap (which maps a page in your program's virtual memory), and keeps track of the buffer's size.</li>
+		<li><code>exit</code>: Is basically a requirement if you don't want to crash at the end up your program.</li>
+		<li><code>write_image</code>: Writes a pre-formatted pixel data buffer to a PPM file (more on this later).</li>
+	</ul>
+	I also wrote some basic utilities that I didn't end up using at all:
+	<ul>
+		<li><code>write_entire_file</code>: Ended up changing into <code>write_image</code>, since I didn't need more file IO.</li>
+		<li><code>free</code>: I didn't really see a reason to free any memory for this particular program, in service of smaller codesize.</li>
+		<li><code>sleep_ms</code>: Would have been useful for animations, because of reasons I will go into later, but I never ended up having any.</li>
+	</ul>
+	Notable is that some of these procedures are way nicer than their equivalent libc functions, since there are no zero-terminated strings anywhere.
+	Unlike C, my program has sized arrays as a basic datatype. The size of a buffer is stored directly in front of that buffer, one byte in front if it's a string, 8 bytes if it is dynamically allocated.
+</p>
+	<h3>User input and windowing</h3>
+<p>
+	There is one large downside to not having a C runtime: dynamically linking to a library at runtime won't normally simply work, because that library expects a C runtime, which you can't always deliver.
+	An example of such a library is xlib, or anything opengl, or basically everything that helps you do windowing.<br/>
+	Now, it's still possible to make windows and do all the other things, but it would (for example) involve setting up an X11 client,
+	and doing network calls (there are syscalls for this) to the computer's X11 server, and this would all be at least several handfulls of code.
+</p><p>
+	I did not want to keep the game to just the terminal, since doing terminal rendering relies on somewhat arcane escape codes, and strange methods of operation in general.
+	So, I opted for the next best thing: rendering to an image.<br/>
+	The simplest (and oldest, for portability's sake) image format I was aware of, was <a target="_blank" href="https://en.wikipedia.org/wiki/Netpbm#File_formats">PPM</a>.
+	the PPM header for binary image data with 24 bits per pixel is ~15 Bytes. My other option was <a target="_blank" href="https://en.wikipedia.org/wiki/BMP_file_format">MS BMP</a>.
+	Much more platforms/image viewers support this file format, but it has a larger header, and, more annoyingly, image data needs to be aligned to 4 bytes per row of pixels.
+	At the time, I chose the easy way out, but in hindsight, the portability <em>might</em> have been worth it.
+</p><p>
+	However, the user input is just kept to the terminal. The program reads two bytes at a time from stdin (the command letter and a newline), and selects what to do from there.
+	A fun side-effect of this is that stdin is not fully cleared after those two bytes are read, which means the player can input multiple moves at the same time, as long as they are seperated by a space or other character.
+</p>
+	<h3>Graphics</h3>
+<p>
+	At a high level, the renderer draws blocks from back to front, in two passes.
+	The first and second pass run the same code, and render the 'ground floor' and 'first floor' of the level respectively.
+	Per pass, the renderer essentially divides in strips that overlap eachother, from top to bottom. Every strip has, it goes through all pixels in that strip, and checks what block coordinate that pixel belongs to.
+	The 'y-coordinate' of the block is simply the strip number, and the 'x-coordinate' is calculated like so:
+<pre><code>	mov rax, r14	; rax now contains the pixel column number (which is kept track of in r14), this will be the dividend
+	mov rdx, 0		; rdx is set to zero because x86 division is Very Strange
+	mov rcx, BLOCK	; rcx now contains the pixel width of a block (which is a constant set elsewhere), this will be the divisor
+	div ecx			; the actual division, which puts the quotient in rdx, and the remainder in rax
+	mov r8, rax		; r8 now contains the remainder, which is the x-coordinate of the block that this pixel is in
+</code></pre>
+	As quick aside, this is the only <code>div</code> instruction in the entire program, it's really cumbersome to use.<br/>
+</p><p>
+	Anyway, the remainder is remembered, and the the program goes on to think about where the pixel is in the current block: on the top, or on the side?
+	To do this, I calculate the y-value (in pixels) of 3 triangle waves.
+<figure>
+	<img alt="Graphic of three coloured triangle waves. From top to bottom, they are labeled 1, 2 and 3, and are green, magenta and orange respectively. All three have the same rate, though line 2 and 3 are inverted, and line 2 touches its peaks with line 1's troughs." src="assets/intra-ribbon.png"/>
+	<figcaption>The three triangle waves within a strip, here drawing out the silhouettes of two blocks</figcaption>
+</figure>
+	The first triangle wave represents the far-away edge of the block, the second the line between the top and the sides, and the third the close-by edge of the block.
+	It is then an excercise to the reader to think of what conditions need to be true for drawing either the top, or the side.<br/>
+</p><p>
+	Before drawing anything, the program must find out if there is a block at all at this location, and if so, which one.
+	To do that, it calls a procedure that I will describe later in detail, but that returns at least:
+	<ul>
+		<li>A number that represents the type of block at the given coordinates</li>
+		<li>A pointer to the colour palette of the current block (one colour for the top of a block, one for the sides)</li>
+	</ul>
+	If the block is air, no pixels are drawn, since air is totally transparent. In any other case, pixels values are copied from the palette pointer to the image.
+</p><p>
+	On every odd strip, the drawing is offset by half a block's width (to the right), so that they nicely fit inbetween the even strips of blocks.
+	This is a very messy way to make these things align, and made the block coordinate system immensely hard to work with. Speaking of:
+</p>
+	<h3>Level representation and coordinate systems</h3>
+<p>
+	Levels are stored in memory as follows:
+	<ol>
+		<li>1 byte that gives the amount of blocks on the 'ground floor'</li>
+		<li>a set of blocks, each of which is 3 bytes: an x-coordinate, a y-coordinate, and a blocktype</li>
+		<li>1 byte that gives the amount of blocks on the 'first floor'</li>
+		<li>a block that gives the head of the worm</li>
+		<li>a set of blocks that gives the rest of the worm, ordered from head to tail</li>
+		<li>a set of pushable blocks</li>
+		<li>the next level</li>
+	</ol>
+	As an aside, because these levels are given in the executable, they cannot be resized, so the number of blocks on either floor has to stay constant.
+	The coordinates here are all in on-screen coordinates (the entire game deals with them as such), which themselves deserve a proper description.
+</p><p>
+	First of all, there are two possible coordinate systems: the on-screen one, and the in-field one.<br/>
+	The in-field system is the one that the player instructs the worm to move in (so the one that corresponds to the keyboard controls).
+	It is aligned to the orthogonal grid, which is oriented at a quarter turn to the player, and overall the one that makes the most sense.
+</p><p>
+	The other coordinate system is the on-screen one. Because of how the block strips are drawn, every odd row of blocks has the same column number as the even row above it.
+<figure>
+	<img alt="Graphic of a blue grid of rhombi. The rows are numbered from 0 to 6 with green numbers. The columns are numbered from 0 to 4 (also green), but instead of how the rows are numbered, every other column has an index. From row 2 down, the rhombi are shaded magenta. The magenta-shaded rhombi are always orthogonal to at least one other magenta-shaded rhombus." src="assets/on-screen-coords.png"/>
+	<figcaption>The on-screen coordinate system. Highlighted in pink is column 2</figcaption>
+</figure>
+	This means that, whenever the worm moves its head in in-field coordinates, its on-screen column coordinate does <emph>not change</emph> when:
+	<ul>
+		<li>it is on an odd row, and going topleft of bottomleft</li>
+		<li>it is on an even row, and going topright or bottomright</li>
+	</ul>
+	Luckily, the on-screen row coordinate reliably changes based on if it's going to the top of bottom, regardless of the coordinates or lateral movement.
+	Any time the worm head has to move, or a block has to move, these rules are applied in approximately 8 instructions (which is a lot for a +x +y in my book).
+</p><p>
+	I designed the levels on paper in a normal grid (so essentially in-field coordinates). Converting those levels to on-screen coordinates was mostly an effort of trial-and error, moving blocks according to the above rule.
+	However, at some point, I realized a formatting trick to make it easier. As an example, here is level 3:
+<pre><code>level_3:
+	db 18
+				db 3, 12, 1
+			db 2, 13, 1,	3, 13, 1
+		db 2, 14, 1,	3, 14, 3,	4, 14, 1
+	db 1, 15, 1,	2, 15, 2,	3, 15, 1,	4, 15, 1
+		db 2, 16, 1,	3, 16, 1,	4, 16, 1
+			db 2, 17, 1,	3, 17, 1
+				db 3, 18, 1,	4, 18, 1
+					db 3, 19, 1
+	db 7
+	db 3, 11, 6
+	db 3, 10, 5
+	db 2, 11, 5
+	db 2, 12, 5
+	db 1, 13, 5
+	db 2, 14, 5
+	db 3, 15, 4
+</pre></code>
+	If you squint your eyes, you can just about make out the layout of the level. The second part (after <code>db 7</code>) gives the positions of the worm and movable blocks.
+	Since those 'first floor' coordinates are also in on-screen, and because there is no z-coordinate, they are just placed at y+2, which is the graphical equivalent.
+</p>
+	<h3>Undo</h3>
+<p>
+	Before any moves are read and processed, the game saves the entire current level to a (newly allocated) buffer, saving the pointer to that buffer in another (more static) buffer.
+	There are no free or realloc procedures, so there is an undo limit of ~256, which I reckoned was good enough.
+	Whenever there's an illegal move, or the user selects undo, the pointers to the buffers that are undone are overwritten, so that memory is very much leaked.
+</p><p>
+	Initially, I wanted to just save the moves themselves, but when I realized that undoing a move is actually impossible because of larger-than-first-order effects of moving blocks via other blocks,
+	I just went for the next dumbest thing. Just taking the time to make a realloc procedure would have saved a lot of complexity on the procedures involved in the undo system,
+	since a lot of code is currently spent on shifting buffers, and copying over double pointers.<br/>
+	Besides, the extra level of indirection was nearly impossible to debug.
+</p>
+	<h3>Movement logic and ordering</h3>
+<p>
+	Moves are performed in-place on the level, so ordering of what needs to happen before what is very important.<br/>
+	Earlier, I mentioned a procedure that would give information on a block at a given location.
+	All that procedure does, is look through the current level, and return on the first block it can find with matching coordinates.
+	This too contributes to the need to be very careful with changing coordinates, because you might not be able to retrieve other blocks that you might've covered up.
+	A more tangible example of wrong ordering is that the worm might not be able to follow its own tail in a tight loop, because it'd 'collide' with the previous position of its own tail.
+</p><p>
+	When a move is read, the first thing that happens is that the worm body snakes forward. This is ok, because the head position (in memory) is always known, and there is no other block that the worm body could overlap, coming from a valid state.<br/>
+	Then, the block on the first floor in the would-be new location of the head is checked. If this is air, it continues to the ground floor check. If it's a part of the snake, it's an illegal move, the buffer is loaded, and the gameloop is restarted.
+</p><p>
+	If there's a movable block in front of the worm, that block's coordinates get retrieved, updated according to the strange coordinate system, and then that new position is also checked for any collisions.
+	However, this time, the ground floor is first checked. If there's a hole beneath that block, it needs to be filled first.
+	It then continues to the first floor check, and if there's a block in front of <emph>that</emph> block, the block-check loops, until no more blocks are being pushed.
+	With this ordering, blocks can push another block and fill a hole simultaneously.
+</p><p>
+	After that, the ground floor check happens for the head of the worm, which is as simple as: continue if there's a ground or a filled-in hole, undo and gameloop if there's a hole or air.
+	When there's a black hole, it checks if there are any unfilled holes left on the ground floor, and if not, it continues to the next level. When the level is reset, the undo buffer is also 'cleared' (the top is set to zero, and more memory is leaked).
+</p><p>
+	Finally, the head of the worm updates, the program jumps back up to the start of the gameloop.
+</p>
+<h2>Closing thoughts</h2>
+<p>
+	Since development was very rushed, every day since the end of the jam, I've had realizations about how every part of this could have been done smaller, faster, more robustly, and more user-friendly.
+	I won't go into all details about that quite yet (maybe at a later date), because I'd honestly rather spend/have spent more time designing puzzles. I think this concept has a lot of potential
+	for a starting game designer like myself.<br/>
+	I'm very happy with the final result, even if it isn't the smallest it can be (or with as much content as it should have),
+	it's still way smaller than the vast majority of similar games out there, and has a lot going for it. I hope you give it a try!<br/>
+	Maybe I'll polish it up a ton and release a steam version :P
+</p>
+<!--
+<a target="_blank" href=""></a>
+-->
