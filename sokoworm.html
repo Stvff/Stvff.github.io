@@ -117,7 +117,7 @@ program_header:
 	The first and second pass run the same code, and render the 'ground floor' and 'first floor' of the level respectively.
 	Per pass, the renderer essentially divides in strips that overlap eachother, from top to bottom. For every strip, it goes through all pixels in that strip, and checks what block coordinate that pixel belongs to.
 	The 'y-coordinate' of the block is simply the strip number, and the 'x-coordinate' is calculated like so:
-<pre><code>mov rax, r14    ; rax now contains the pixel column number (which is kept track of in r14), this will be the dividend.
+<pre><code class="nasm">mov rax, r14    ; rax now contains the pixel column number (which is kept track of in r14), this will be the dividend.
 mov rdx, 0      ; rdx is set to zero because x86 division is Very Strange.
 mov rcx, BLOCK  ; rcx now contains the pixel width of a block (which is a constant set elsewhere), this will be the divisor.
 div ecx	        ; The actual division, which puts the quotient in rdx, and the remainder in rax.
@@ -191,7 +191,7 @@ add r9b, dl      ; ypos is updated, no changes need to be done to ydir.
 </p><p>
 	I designed the levels on paper in a normal grid (so essentially in-field coordinates). Converting those levels to on-screen coordinates was mostly an effort of trial-and error, moving blocks according to the above rules by hand.
 	However, at some point, I realized a formatting trick to make it easier. As an example, here is level 3:
-<pre><code>level_3:
+<pre><code class="nasm">level_3:
 	db 18
 				db 3, 12, 1
 			db 2, 13, 1,	3, 13, 1
