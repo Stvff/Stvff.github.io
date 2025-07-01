@@ -1,5 +1,3 @@
-nesting := 0;
-
 make :: (sb: *String_Builder, html: HTML) {
 	print(sb, "<!doctype html>\n");
 	print(sb, "<html lang=\"%\">\n", html.lang);
@@ -109,6 +107,19 @@ make :: (sb: *String_Builder, heading: Heading) {
 		make(sb, heading.h.content);
 		nesting -= 1;
 		print(sb, "</h%>\n", heading.h.level);
+	} else if heading.hgroup.h.content { 
+		tag(sb, "hgroup", heading.hgroup.global_attributes);
+		print(sb, "\n");
+		nesting += 1;
+		nest(sb);
+		make(sb, Heading.{h = heading.hgroup.h});
+		for heading.hgroup.sub {
+			nest(sb);
+			make(sb, it);
+		}
+		nesting -= 1;
+		nest(sb);
+		print(sb, "</hroup>\n");
 	}
 }
 
@@ -130,13 +141,59 @@ make :: (sb: *String_Builder, phrasing: []Phrasing) {
 make :: (sb: *String_Builder, phrasing: Phrasing) {
 	make(sb, phrasing.only_phrasing);
 	//make(sb, phrasing.embedded);
-	//make(sb, phrasing.phrasing_interactive);
+	make(sb, phrasing.phrasing_interactive);
 	//make(sb, phrasing.metadata_phrasing);
 }
 
 make :: (sb: *String_Builder, only_phrasing: Only_Phrasing) {
-	if only_phrasing.pcontent
+	attr: []Attribute;
+	etag: string;
+	content: []Phrasing;
+
+	if only_phrasing.pcontent {
 		print(sb, "%", only_phrasing.pcontent);
+		return;
+	} else if only_phrasing.b.content {
+		attr = only_phrasing.b.global_attributes;
+		etag = "b";
+		content = only_phrasing.b.content;
+	} else if only_phrasing.code.content {
+		attr = only_phrasing.code.global_attributes;
+		etag = "code";
+		content = only_phrasing.code.content;
+	} else if only_phrasing.em.content {
+		attr = only_phrasing.em.global_attributes;
+		etag = "em";
+		content = only_phrasing.em.content;
+	} else {
+		for 1..only_phrasing.br.count {
+			print(sb, "<br/>\n");
+			nest(sb);
+		}
+		return;
+	}
+
+	if etag {
+		tag(sb, etag, attr);
+		make(sb, content);
+		print(sb, "</%>", etag);
+	}
+}
+
+make :: (sb: *String_Builder, phrasing_interactive: Phrasing_Interactive) {
+	if phrasing_interactive.a.content {
+		a := phrasing_interactive.a;
+		if a.target {
+			tag(sb, "a", a.global_attributes, .{"target", a.target}, .{"href", a.href});
+		} else {
+			tag(sb, "a", a.global_attributes, .{"href", a.href});
+		}
+		make(sb, a.content);
+		print(sb,  "</a>");
+	}
 }
 
 #import "Basic";
+
+#scope_file
+nesting := 0;

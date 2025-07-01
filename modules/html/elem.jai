@@ -9,12 +9,12 @@ A :: struct {
 	global_attributes : []Attribute;
 	target: string;
 	href: string;
-	content: []A_Content;
+	content: []Phrasing;
 }
-A_Content :: struct {
-	using flow: Flow;
-	using other: Other;
-}
+// A_Content :: struct {
+// 	using flow: Flow;
+// 	using other: Other;
+// }
 
 Aside :: struct {
 	global_attributes : []Attribute;
@@ -43,7 +43,7 @@ Body :: struct {
 	content: []Flow;
 }
 
-Br :: struct { count: int = 1; }
+Br :: struct { count: int; }
 
 Button :: struct {
 	global_attributes : []Attribute;
