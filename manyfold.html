@@ -47,6 +47,11 @@
 	The name 'Manyfold' is a play on the mathematical concept of the <a tag="_blank" href="https://en.wikipedia.org/wiki/Manifold">manifold</a>.
 	Manifolds can (in very loose terms) be described as maps between spaces. For our purposes, the most important example is a <a tag="_blank" href="https://en.wikipedia.org/wiki/Surface_(topology)">surface</a>.
 	A position on a surface can be defined with 2 numbers (surfaces are 2D), but the surface itself can exist in any higher number of dimensions, in our case, 3.
+</p><p>
+	In Manyfold, the user defines surfaces, and then specifies how the boundaries of those surfaces connect to eachother.
+	To do this, the user has to define the ranges of the <code>u</code> and <code>v</code> coordinates, and denote if the starts and end are inclusive or exclusive.
+	When triangulating, an exclusive edge is connected to an inclusive edge of another (or the same) surface. Next to this, a range can have <code>pole</code>s.
+	When an edge is a pole, all points on that edge coincide, so only one point is calculated.
 </p>
 <h3>Examples</h3>
 <h2>Limitations</h2>
