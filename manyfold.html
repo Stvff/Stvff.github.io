@@ -22,37 +22,83 @@
 	I've been thinking for a while about what would make sense as the simplest and most powerful paradigm for designing non-artistic solids.
 	There are existing options, but to me, it seemed that none of them were fully useful in isolation. In particular, I've been
 	looking for something that would allow arbitrary freeform curves and surfaces in 3D space to be straighforward to create.<br/>
-	<a tag="_blank" href="https://en.wikipedia.org/wiki/Non-uniform_rational_B-spline">NURBs</a> come close, but are not quite it,
+	<a target="_blank" href="https://en.wikipedia.org/wiki/Non-uniform_rational_B-spline">NURBs</a> come close, but are not quite it,
 	as they are not arbitrary (they are B-splines).
 </p><p>
-	By approximation, <a tag="_blank" href="https://en.wikipedia.org/wiki/Fusion_360">Autodesk Fusion</a> (even though it is a catagory 2-3 program in practice)
+	By approximation, <a target="_blank" href="https://en.wikipedia.org/wiki/Fusion_360">Autodesk Fusion</a> (even though it is a catagory 2-3 program in practice)
 	is vaguely based around extruding, sweeping, and rotating sketches (which are 2D parametric constraint-based vector drawings).
 	However, I couldn't quite put my finger on a solid and robust way to implement that in a way that remained pure.
 </p><p>
-	Finally, when I saw Wierd 3D Pixel tool, I got a more tangible idea of what I wanted to have, even though it was not at all like that tool.
+	Finally, when I saw Easymetric (in development by <a target="_blank" href="https://x.com/Oroshibu">Oroshibu</a>), I got a more tangible idea of what I wanted to have, even though it was not at all like that tool.
 <p>
 <h2>What I made</h2>
 	Manyfold is a 3D modeling engine library, which means that it can be used to write a program that generates
 	a 3D mesh. The user describes the model according to Manyfold's paradigm, and Manyfold triangulates it.<br/>
-	It can export to <a tag="_blank" href="https://en.wikipedia.org/wiki/PLY_(file_format)"><code>.ply</code></a>, <a tag="_blank" href="https://en.wikipedia.org/wiki/STL_(file_format)"><code>.stl</code></a> and <a tag="_blank" href="https://en.wikipedia.org/wiki/Wavefront_.obj_file"><code>.obj</code></a>.
+	It can export to <a target="_blank" href="https://en.wikipedia.org/wiki/PLY_(file_format)"><code>.ply</code></a>, <a target="_blank" href="https://en.wikipedia.org/wiki/STL_(file_format)"><code>.stl</code></a> and <a target="_blank" href="https://en.wikipedia.org/wiki/Wavefront_.obj_file"><code>.obj</code></a>.
 </p><p>
 	Manyfold's paradigm allows it to guarentee a volume is 'closed'. In this context, that means that,
 	unless you tell it otherwise, it will not export any object with 2D (or 1D) features. In less formal terms, objects that you can 3D print with infill.
 </p><p>
-	Currently, Manyfold is nothing more than a module for the programming language <a tag="_blank" href="https://en.wikipedia.org/wiki/Jonathan_Blow#Jai_language">Jai</a> (which is in closed beta).
+	Currently, Manyfold is nothing more than a module for the programming language <a target="_blank" href="https://en.wikipedia.org/wiki/Jonathan_Blow#Jai_language">Jai</a> (which is in closed beta).
 	I have hopes of making a proper GUI tool around it, but 3D modeling GUIs are inherently very complicated, and I do not see a good way forward for it at the moment.
 </p>
 <h3>The Paradigm</h3>
 <p>
-	The name 'Manyfold' is a play on the mathematical concept of the <a tag="_blank" href="https://en.wikipedia.org/wiki/Manifold">manifold</a>.
-	Manifolds can (in very loose terms) be described as maps between spaces. For our purposes, the most important example is a <a tag="_blank" href="https://en.wikipedia.org/wiki/Surface_(topology)">surface</a>.
+	The name 'Manyfold' is a play on the mathematical concept of the <a target="_blank" href="https://en.wikipedia.org/wiki/Manifold">manifold</a>.
+	Manifolds can (in very loose terms) be described as maps between spaces. For our purposes, the most important example is a <a target="_blank" href="https://en.wikipedia.org/wiki/Surface_(topology)">surface</a>.
 	A position on a surface can be defined with 2 numbers (surfaces are 2D), but the surface itself can exist in any higher number of dimensions, in our case, 3.
 </p><p>
 	In Manyfold, the user defines surfaces, and then specifies how the boundaries of those surfaces connect to eachother.
-	To do this, the user has to define the ranges of the <code>u</code> and <code>v</code> coordinates, and denote if the starts and end are inclusive or exclusive.
-	When triangulating, an exclusive edge is connected to an inclusive edge of another (or the same) surface. Next to this, a range can have <code>pole</code>s.
+	To do this, the user has to define the ranges of the <i>u</i> and <i>v</i> coordinates, and denote if the starts and end are inclusive or exclusive.
+	When triangulating, an exclusive edge is connected to an inclusive edge of another (or the same) surface. Next to this, a range can have <i>poles</i>.
 	When an edge is a pole, all points on that edge coincide, so only one point is calculated.
 </p>
-<h3>Examples</h3>
+<h3>An example</h3>
+<p>
+	The sphere has all Manyfold features, in the least amount of code.
+<div class="two-col">
+<pre><code class="jai">#import "manyfold";
+#import "Math";
+
+main :: () {
+	sphere := Surface.{
+		name = "sphere",
+		u_domain = Range.{
+			0, 2*PI, 50, .EXCL_END
+		},
+		v_domain = Range.{
+			0, PI, 50, .DIPOLE
+		},
+		equation = (uv: avec2) -> avec3 { return .{cos(uv.x)*sin(uv.y), sin(uv.x)*sin(uv.y), cos(uv.y)}; },
+	};
+	sphere.u_begin_attach = .{.U_END, *sphere, false};
+	sphere.u_end_attach = .{.U_BEGIN, *sphere, false};
+
+	file_from_surface(*sphere, format = .OBJ);
+}
+</code></pre>
+<img alt="A screenshot of the sphere generated with Manyfold. The vertices and edges are visible." src="assets/manyfold_sphere.png"/>
+</div>
+	This is the full program that generates a <code>sphere.obj</code> file (result pictured). Note that there are no primitives in Manyfold, so the equation for the sphere had to be provided.
+</p><p>
+	The <code>Range</code> struct has 4 fields. A <code>begin</code>, <code>end</code>, <code>resolution</code> and <code>kind</code>.<br/>
+	The 'begin' and 'end' simply give the beginning and end values of the range. They are allowed to be ascending and descending, though this will influence the winding order of the triangles on the surface.<br/>
+	'resolution' is an integer that tells the module how many subdivisions should be made during triangulation.<br/>
+	Finally, 'kind' denotes whether the begin and end are inclusive, exclusive, or poles.
+</p><p>
+	We can see that the <i>u</i> domain goes from 0 to <i>Tau</i> in 50 increments, and that its end is exclusive. Its begin is inclusive, which is the default.<br/>
+	The <i>v</i> domain goes from 0 to <i>Pi</i>, also in 50 increments, and has poles on both ends. These are inclusive as well.<br/>
+	<code>equation</code> is the <a target="_blank" href = "https://en.wikipedia.org/wiki/Sphere#Parametric">parametric equation for a unit sphere at the origin</a> (where <i>u</i> is <i>phi</i> and <i>v</i> is <i>theta</i>).<br/>
+</p><p>
+	After the main definition, we encounter two lines that seperately modify two fields. They are on seperate lines because referencing a pointer to a variable during the definition of that variable is not allowed in Jai.
+	These lines define how the <i>u</i> domain's edges are attached to other edges. In this case, the beginning and the end of <i>u</i> are attached to each other, because a sphere is a fully closed surface.
+	The <i>v</i> domain does not need to have attachment definitions, because its inclusive poles are already fully closed.
+</p><p>
+	The <code>Surface_Attachment</code> struct that defines these attachments has 3 fields:<br/>
+	<code>kind</code>, which is an enum that reference which other edge to attach to,<br/>
+	<code>surface</code>, which is a pointer to the surface where to look to attach,<br/>
+	and <code>reversed</code>, a boolean that says to stitch the two edges in opposing directions, which is sometimes nessecary to prevent all sorts of strange overlapping.
+</p>
+
 <h2>Limitations</h2>
 <h2>Future</h2>
