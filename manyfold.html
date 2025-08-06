@@ -71,13 +71,13 @@ main :: () {
 		},
 		equation = (uv: avec2) -> avec3 { return .{cos(uv.x)*sin(uv.y), sin(uv.x)*sin(uv.y), cos(uv.y)}; },
 	};
-	sphere.u_begin_attach = .{.U_END, *sphere, false};
-	sphere.u_end_attach = .{.U_BEGIN, *sphere, false};
+	sphere.u_begin_attach = Surface_Attachment.{.U_END, *sphere, false};
+	sphere.u_end_attach = Surface_Attachment.{.U_BEGIN, *sphere, false};
 
 	file_from_surface(*sphere, format = .OBJ);
 }
 </code></pre>
-<img alt="A screenshot of the sphere generated with Manyfold. The vertices and edges are visible." src="assets/manyfold_sphere.png"/>
+<img alt="A screenshot of the sphere generated with Manyfold. The edges are visible." src="assets/manyfold_sphere.png"/>
 </div>
 	This is the full program that generates a <code>sphere.obj</code> file (result pictured). Note that there are no primitives in Manyfold, so the equation for the sphere had to be provided.
 </p><p>
@@ -96,9 +96,38 @@ main :: () {
 </p><p>
 	The <code>Surface_Attachment</code> struct that defines these attachments has 3 fields:<br/>
 	<code>kind</code>, which is an enum that reference which other edge to attach to,<br/>
-	<code>surface</code>, which is a pointer to the surface where to look to attach,<br/>
+	<code>surface</code>, a pointer to the surface where to look to attach,<br/>
 	and <code>reversed</code>, a boolean that says to stitch the two edges in opposing directions, which is sometimes nessecary to prevent all sorts of strange overlapping.
 </p>
 
-<h2>Limitations</h2>
-<h2>Future</h2>
+<h2>Problems and limitations</h2>
+<p>
+	The paradigm can describe any volume (of any <a target="_blank" href="https://en.wikipedia.org/wiki/Genus_(mathematics)">genus</a>). However, it cannot guarentee that surfaces do not intersect.
+	Sadly, verifying if and exactly where a completely arbitrary surface intersects with itself or another surface is actually technically impossible.
+	Of course, the problem can be constrained to become a lot more manageable, but more on that later.
+</p><p>
+	Even though it can describe any volume of any genus, that does not mean it is convenient to do so. Something as basic as a cube has 6 surfaces (already a lot of paperwork).
+	Adding features to any of the surfaces usually means that that surface now has to consist of several surfaces. This is a problem, because any surface's edge can only connect to one other edge,
+	and so when one surface has been turned into multiple, all of the connecting surfaces usually also need to be divided, unless you get really clever with it.
+</p><p>
+	Something else that often happens, is that the final shape ends up being simple linear interpolation between a couple of curves in 3D space. This is not inherently a problem, but it's informative
+	about whether or not this paradigm is solving the correct problem.
+</p><p>
+	Somewhat in conclusion, the Manyfold paradigm solves 1 problem somewhat well: Volumes that consistent purely of a low number of surfaces with rbitrary compound curvature, connected to eachother in straightforward ways.
+</p>
+
+<h2>What's next?</h2>
+<p>
+	Manyfold is not the ultimate solution. Both constraint-based sketching and boolean volume modification are still more practical paradigms for creating useful shapes (though neither solve the problem that Manyfold does).
+</p><p>
+	The central feature that manyfold misses out on is intersection between surfaces. Boundaries of surfaces were only defined by the limits of the <i>uv</i>-coordinates, but in most cases this is not generally useful.
+	As hinted at earlier, analytical surface intersection detection/solving is technically impossible, but that is really only because the surfaces in question are arbitrary.
+	To 'solve' this, there are at least 3 possible ways forward:
+	<ol>
+		<li>Only do intersection detection at the mesh stage.</li>
+		<li>Only allow intersection detection for known shapes.</li>
+		<li>Allow intersection detection to have reasonable margins of error (lower margins cost more compute).</li>
+	</ol>
+</p><p>
+	Finally, it must be mentioned that making any sort of shape is inherently a very graphical process. GUI must eventually exist for it, and the paradigm should allow for that.
+</p>
