@@ -6,8 +6,8 @@
 		<li>All of the paradigms at the same time</li>
 		<li>All of the paradigms at the same time (corporate yearly license edition)</li>
 	</ol>
-	All of these can be extremely useful. Especially the last two catagories have the highest 'ceiling of usefulness',
-	because they're made to do whatever the user (or client, in catagory 3) wants it to do.
+	All of these can be extremely useful. Especially the last two categories have the highest 'ceiling of usefulness',
+	because they're made to do whatever the user (or client, in category 3) wants it to do.
 </p><p>
 	Of course, this multifacetedness does come at a cost. The learning curve for these programs is primarily dominated
 	by the accumulation of knowledge about what features there are, as opposed to learning how to most effectively utilize
@@ -15,7 +15,7 @@
 	I put 'suffer' in quotes, because, as with all things, there is a lot of nuance.<br/>
 	However, it would be off-topic to go into detail (I might write another post about it at some point).
 </p><p>
-	For now I'll say that catagory 2 and 3 are not inherently bad, but that I don't enjoy using tools of that nature.
+	For now I'll say that category 2 and 3 are not inherently bad, but that I don't enjoy using tools of that nature.
 </p>
 <h2>An idea</h2>
 <p>
@@ -25,7 +25,7 @@
 	<a target="_blank" href="https://en.wikipedia.org/wiki/Non-uniform_rational_B-spline">NURBs</a> come close, but are not quite it,
 	as they are not arbitrary (they are B-splines).
 </p><p>
-	By approximation, <a target="_blank" href="https://en.wikipedia.org/wiki/Fusion_360">Autodesk Fusion</a> (even though it is a catagory 2-3 program in practice)
+	By approximation, <a target="_blank" href="https://en.wikipedia.org/wiki/Fusion_360">Autodesk Fusion</a> (even though it is a category 2-3 program in practice)
 	is vaguely based around extruding, sweeping, and rotating sketches (which are 2D parametric constraint-based vector drawings).
 	However, I couldn't quite put my finger on a solid and robust way to implement that in a way that remained pure.
 </p><p>
@@ -36,7 +36,7 @@
 	a 3D mesh. The user describes the model according to Manyfold's paradigm, and Manyfold triangulates it.<br/>
 	It can export to <a target="_blank" href="https://en.wikipedia.org/wiki/PLY_(file_format)"><code>.ply</code></a>, <a target="_blank" href="https://en.wikipedia.org/wiki/STL_(file_format)"><code>.stl</code></a> and <a target="_blank" href="https://en.wikipedia.org/wiki/Wavefront_.obj_file"><code>.obj</code></a>.
 </p><p>
-	Manyfold's paradigm allows it to guarentee a volume is 'closed'. In this context, that means that,
+	Manyfold's paradigm allows it to guarantee a volume is 'closed'. In this context, that means that,
 	unless you tell it otherwise, it will not export any object with 2D (or 1D) features. In less formal terms, objects that you can 3D print with infill.
 </p><p>
 	Currently, Manyfold is nothing more than a module for the programming language <a target="_blank" href="https://en.wikipedia.org/wiki/Jonathan_Blow#Jai_language">Jai</a> (which is in closed beta).
@@ -95,14 +95,14 @@ main :: () {
 	The <i>v</i> domain does not need to have attachment definitions, because its inclusive poles are already fully closed.
 </p><p>
 	The <code>Surface_Attachment</code> struct that defines these attachments has 3 fields:<br/>
-	<code>kind</code>, which is an enum that reference which other edge to attach to,<br/>
+	<code>kind</code>, which is an enum that references which other edge to attach to,<br/>
 	<code>surface</code>, a pointer to the surface where to look to attach,<br/>
 	and <code>reversed</code>, a boolean that says to stitch the two edges in opposing directions, which is sometimes nessecary to prevent all sorts of strange overlapping.
 </p>
 
 <h2>Problems and limitations</h2>
 <p>
-	The paradigm can describe any volume (of any <a target="_blank" href="https://en.wikipedia.org/wiki/Genus_(mathematics)">genus</a>). However, it cannot guarentee that surfaces do not intersect.
+	The paradigm can describe any volume (of any <a target="_blank" href="https://en.wikipedia.org/wiki/Genus_(mathematics)">genus</a>). However, it cannot guarantee that surfaces do not intersect.
 	Sadly, verifying if and exactly where a completely arbitrary surface intersects with itself or another surface is actually technically impossible.
 	Of course, the problem can be constrained to become a lot more manageable, but more on that later.
 </p><p>
@@ -113,14 +113,14 @@ main :: () {
 	Something else that often happens, is that the final shape ends up being simple linear interpolation between a couple of curves in 3D space. This is not inherently a problem, but it's informative
 	about whether or not this paradigm is solving the correct problem.
 </p><p>
-	Somewhat in conclusion, the Manyfold paradigm solves 1 problem somewhat well: Volumes that consistent purely of a low number of surfaces with rbitrary compound curvature, connected to eachother in straightforward ways.
+	Somewhat in conclusion, the Manyfold paradigm solves 1 problem somewhat well: Volumes that consist purely of a low number of surfaces with arbitrary compound curvature, connected to eachother in straightforward ways.
 </p>
 
 <h2>What's next?</h2>
 <p>
 	Manyfold is not the ultimate solution. Both constraint-based sketching and boolean volume modification are still more practical paradigms for creating useful shapes (though neither solve the problem that Manyfold does).
 </p><p>
-	The central feature that manyfold misses out on is intersection between surfaces. Boundaries of surfaces were only defined by the limits of the <i>uv</i>-coordinates, but in most cases this is not generally useful.
+	The central feature that Manyfold misses out on is intersection between surfaces. Boundaries of surfaces are only defined by the limits of the <i>uv</i>-coordinates, but in most cases this is not generally useful.
 	As hinted at earlier, analytical surface intersection detection/solving is technically impossible, but that is really only because the surfaces in question are arbitrary.
 	To 'solve' this, there are at least 3 possible ways forward:
 	<ol>
