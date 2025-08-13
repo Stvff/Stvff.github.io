@@ -1,38 +1,78 @@
 <h1 id="top">Formal Description Language</h1>
 <p>
 	Honestly, I was kinda mucking about, but I think I found a cozy little language (or should I say, algebra?) that can both describe data structures and programs.
-</p><p>
+</p>
+<h2>Outline</h2>
+<p>
 	It starts with a very basic set of rules. First, we define <code>:=</code>.
-	It allows us to substitute the right side with the left side, whenever we encounter the left side in an expression.</br>
+	It allows us to substitute the left side with the right side, whenever we encounter the left side in an expression.<br/>
 	To give an example:
 <pre><code> a := b;</code></pre>
-	This means that, whenever an <code>a</code> is encountered, we can substitute it for a <code>b</code>.
+	This means that, whenever an <code>a</code> is encountered, we can substitute it for a <code>b</code>,
+	but not the other way around.
 </p><p>
-	Next, we define different types of expressions. There are three.
-</p><p>
+	Next, we define 3 different operators, that can be used to form expressions.
+</p>
+<h3>Comma</h3>
+<p>
 	The first is <code>,</code>, a comma. A comma denotes a list of possible symbols that something can be.
-	In type theory, this sort of definition would be considered a sum type.</br>
-	As an example, this <code>b</code> is a boolean. it can be either True or False.
-	<code>d</code> is a decimal digit, it can be any symbol between 0 and 9.
+	In type theory, this sort of definition would be considered a sum type.<br/>
+	As an example:
 <pre><code>b := T, F;
 d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
-</p><p>
-	The second type of expression is <code> </code>, an empty space. It's a stretch to call it a 'type of expression',
-	but strictly speaking, they denote concatenation. In type theory, this would be considered a product type.</br>
+	The <code>b</code> is a boolean. it can be either True or False.
+	<code>d</code> is a decimal digit, it can be any symbol between 0 and 9.
+</p>
+<h3>Space</h3>
+<p>
+	The second operator is <code> </code>, empty space. One might call it a stretch to call spaces 'operators',
+	but they do denote a unique meaning: concatenation.<br/>
 	Here, we define <code>u</code> to be two <code>b</code> symbols (booleans).
 <pre><code>u := b b;</code></pre>
 	Each boolean could be either true or false, so this <code>u</code> symbol can have 4 possible states.
-	The total amount of states of a symbol created with concatenation is the product of the states of its components (hence its name in type theory).
-</p><p>
-	The third type of expression is <code>=</code>, equality. It asserts that a certain symbol is equal to another.
-	In the case of 'sum type'-symbols, this means that is specifies which symbol it embodies.</br>
-	<code>=</code> gives us the ability to define operations. For example, let's define <code>~</code>, the logic negation operator, for <code>b</code>:
+	The total amount of states of a symbol created with concatenation is the product of the states of its components.
+	Because of this, these sorts of symbols are called 'product types' in type theory.
+	For the sake of convenience, we will call the 'amount of possible states of a symbol or expression', <i>cardinality</i>.
+</p>
+<h3>Equality</h3>
+<p>
+	The third operator is <code>=</code>, equality. It asserts that a certain symbol is equal to another.
+	In the case of 'sum type'-symbols, this means that an equality expression specifies which sub-symbol that symbol embodies.<br/>
+	<code>=</code> gives us the ability to define other operations. For example, let's define <code>~</code>, the logic negation operator, for <code>b</code>:
 <pre><code>~(b = T) := (b = F);
 ~(b = F) := (b = T);
 </code></pre>
-	Now, we immediately notice that I sneakily introduced parentheses, but those are purely 'syntactic sugar', to denote clear precedence.<br>
+	Now, we immediately notice that I sneakily introduced parentheses, but those are purely 'syntactic sugar',
+	to denote clear precedence. (We might prove at a later date that they can be notationed away.)<br>
+	The next notable thing is the seeming redundancy of the notation. Why did I type <code>(b = T)</code> and the like,
+	instead of simply:
+<pre><code>~T := F;
+~F := T;
+</code></pre>
+	It is because we were defining the <code>~</code> operator on <code>b</code>, and not on the underlying symbols.
+	As mentioned, the definition statement is one-directional. Left becomes Right, not the other way around.
+	For a simple unary operation like negation, the difference of using the overarching sum-symbol does not matter,
+	but on operations with more than one argument, and more complex types, the amount of possible interactions
+	increases significantly.<br/>
+	Recall that concatenating symbols increases the cardinality by the product of the substituant cardinalites.
+	Using the earlier defined decimal digit <code>d</code> for an example, if we wanted to describe an operator <code>#</code>
+	between two <code>d</code> symbols, that would look like:
+<pre><code>d # d</code></pre>
+	Each <code>d</code> has a cardinality of 10, and the <code>#</code> is never defined in isolation (this is what makes it an operator),
+	it has the cardinality of itself: 1. It can only ever be <code>#</code>.<br/>
+	That means the cardinality of the given expression is 10×1×10 = 100.
+	Not needing to specify every subvalue would be advisable if we can help it.
 </p><p>
-	Let's also define <code>&</code>, the logic conjunction operator:
+	For a hands-on example of this, let's look at defining <code>&</code>, the logic conjunction operator.
+	We now know that the maximum amount of statements we'd need to completely describe <code>&</code> would be 4 (since it takes two booleans).<br/>
+	Something like this:
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) & (b = T) := (b = F);
+(b = T) & (b = F) := (b = F);
+(b = F) & (b = F) := (b = F);
+</code></pre>
+	However, when either of the arguments is <code>F</code>, we know the result will indeed be <code>F</code>, no matter the other argument.
+	So, <code>&</code> can be simplified by several terms:
 <pre><code>(b = T) & (b = T) := (b = T);
 (b = F) & b := (b = F);
 b & (b = F) := (b = F);
