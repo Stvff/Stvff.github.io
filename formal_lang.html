@@ -1,0 +1,43 @@
+<h1 id="top">Formal Description Language</h1>
+<p>
+	Honestly, I was kinda mucking about, but I think I found a cozy little language (or should I say, algebra?) that can both describe data structures and programs.
+</p><p>
+	It starts with a very basic set of rules. First, we define <code>:=</code>.
+	It allows us to substitute the right side with the left side, whenever we encounter the left side in an expression.</br>
+	To give an example:
+<pre><code> a := b;</code></pre>
+	This means that, whenever an <code>a</code> is encountered, we can substitute it for a <code>b</code>.
+</p><p>
+	Next, we define different types of expressions. There are three.
+</p><p>
+	The first is <code>,</code>, a comma. A comma denotes a list of possible symbols that something can be.
+	In type theory, this sort of definition would be considered a sum type.</br>
+	As an example, this <code>b</code> is a boolean. it can be either True or False.
+	<code>d</code> is a decimal digit, it can be any symbol between 0 and 9.
+<pre><code>b := T, F;
+d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
+</p><p>
+	The second type of expression is <code> </code>, an empty space. It's a stretch to call it a 'type of expression',
+	but strictly speaking, they denote concatenation. In type theory, this would be considered a product type.</br>
+	Here, we define <code>u</code> to be two <code>b</code> symbols (booleans).
+<pre><code>u := b b;</code></pre>
+	Each boolean could be either true or false, so this <code>u</code> symbol can have 4 possible states.
+	The total amount of states of a symbol created with concatenation is the product of the states of its components (hence its name in type theory).
+</p><p>
+	The third type of expression is <code>=</code>, equality. It asserts that a certain symbol is equal to another.
+	In the case of 'sum type'-symbols, this means that is specifies which symbol it embodies.</br>
+	<code>=</code> gives us the ability to define operations. For example, let's define <code>~</code>, the logic negation operator, for <code>b</code>:
+<pre><code>~(b = T) := (b = F);
+~(b = F) := (b = T);
+</code></pre>
+	Now, we immediately notice that I sneakily introduced parentheses, but those are purely 'syntactic sugar', to denote clear precedence.<br>
+</p><p>
+	Let's also define <code>&</code>, the logic conjunction operator:
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) & b := (b = F);
+b & (b = F) := (b = F);
+</code></pre>
+</p>
+<!--
+<pre><code></code></pre>
+-->
