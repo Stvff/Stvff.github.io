@@ -14,6 +14,9 @@
 	</ul>
 	<li><a href="#cardinality">Cardinality</a></li>
 	<li><a href="#complex_operations">Defining more complicated operations</a></li>
+	<ul>
+		<li><a href="#modular_addition">Case study: Modular Addition</a></li>
+	</ul>
 <!--<li><a href="#"></a></li>-->
 </ul>
 <h2 id="outline">Outline</h2>
@@ -53,7 +56,13 @@ d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
 <p>
 	The third operator is <code>=</code>, equality. It asserts that a certain symbol is equal to another.
 	In the case of 'sum type'-symbols, this means that an equality expression specifies which sub-symbol that symbol embodies.<br/>
-	<code>=</code> gives us the ability to define other operations. For example, let's define <code>~</code>, the logic negation operator, for <code>b</code>:
+	The most basic case of this is in defining 'values' for 'constants', while maintaining their identity as an originally generalized 'type':
+<pre><code>Y := b = T;</code></pre>
+	In this usage, <code>Y</code> is a constant, <code>T</code> is a value, and <code>b</code> is, in essence, its type.
+</p><p>
+	There is a more interesting use of <code>=</code>, and that is that it gives us the ability to define other operations,
+	by placing it on the left of a definition statement.
+	For example, let's define <code>~</code>, the logic negation operator, for <code>b</code>:
 <pre><code>~(b = T) := (b = F);
 ~(b = F) := (b = T);
 </code></pre>
@@ -125,7 +134,13 @@ F & F := F;
  b      & (b = F) := (b = F);
 </code></pre>
 	In doing this, you'll notice that the last case on the previous definition (<code>(b = F) & (b = F) := (b = F);</code>) has been generalized out.
-	The definition now consists of three statements, instead of four.
+	The definition now consists of three statements, instead of four.<br/>
+	One could argue that these gains are marginal at best, so let's look at a more extreme case.
+</p>
+
+<h3 id="modular_addition">Case study: Modular Addition</h3>
+<p>
+
 </p>
 <!--
 	Recall that concatenating symbols increases cardinality by the product of the substituant cardinalites.
