@@ -13,6 +13,7 @@
 		<li><a href="#equality">Equality</a></li>
 	</ul>
 	<li><a href="#cardinality">Cardinality</a></li>
+	<li><a href="#complex_operations">Defining more complicated operations</a></li>
 <!--<li><a href="#"></a></li>-->
 </ul>
 <h2 id="outline">Outline</h2>
@@ -24,8 +25,7 @@
 	This means that, whenever an <code>a</code> is encountered, we can substitute it for a <code>b</code>,
 	but not the other way around.
 </p><p>
-	Next, we define 3 different operators, that can be used to form expressions. After that, we will introduce some useful
-	terms, and finally, some extra syntax that will symplify notation.
+	Next, we define 3 different operators, that can be used to form expressions.
 </p>
 
 <h3 id="comma">Comma</h3>
@@ -68,7 +68,8 @@ d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
 	As mentioned, the definition statement is one-directional. Left becomes Right, not the other way around.
 	For a simple unary operation like negation, the difference of using the 'overarching' symbol does not matter,
 	but on operations with more than one argument, and more complex types, the amount of possible interactions
-	increases significantly.
+	increases significantly. So if the operation allows for it, it would help if we could generalize, to cut down
+	on amount of cases we have to write out. Before we start doing that, we have to lay out some important terms:
 </p>
 
 <h2 id="cardinality">Cardinality</h2>
@@ -90,18 +91,43 @@ d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
 </p><p>
 	For 'product type' (henceforth <i>product-like</i>) symbols and expressions, we can provide a very similar example:
 <pre><code>p := b d;</code></pre>
-	<code>p</code> is both <code>b</code> and <code>d</code>, so it's possible amount of states is the cardinality of <code>b</code> multiplied
+	<code>p</code> contains both a <code>b</code> and <code>d</code>, so it's possible amount of states is the cardinality of <code>b</code> multiplied
 	by the cardinality of <code>d</code>: 2×10 = 20. Indeed, the <i>product</i> of the consituant cardinalities.
 </p><p>
 	What about symbols like <code>T</code> or <code>5</code>, that we used without giving them their own definition?
 	They simply have a cardinality of 1; they can only ever be themselves.
 </p>
 
+<h2 id="complex_operations">Defining more complicated operations</h2>
+<p>
+	At the end of the <a href="#equality">chapter on Equality</a>, we briefly discussed how it might work in
+	our favor to 'generalize' on operation definitions, and how it helps to use sum-like symbols for this.
+</p><p>
+	As a first, 'low stakes' example, let's look at <code>&</code>, the logic conjunction operator.
+	If we were to define it using purely <code>T</code> and <code>F</code>, it would look like this:
+<pre><code>T & T := T;
+F & T := F;
+T & F := F;
+F & F := F;
+</code></pre>
+	But, there is somewhat of a redundancy here. When either of the arguments is <code>F</code>,
+	we know the result will also be <code>F</code>, regardless of the other argument. By using the <code>b</code>
+	symbol, we can actually implement this generalization.<br/>
+	We start by rewriting our first version to take booleans:
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) & (b = T) := (b = F);
+(b = T) & (b = F) := (b = F);
+(b = F) & (b = F) := (b = F);
+</code></pre>
+	Then, we implement our generalization by omitting the equality check on one of the arguments if the other is <code>F</code>.
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) &  b      := (b = F);
+ b      & (b = F) := (b = F);
+</code></pre>
+	In doing this, you'll notice that the last case on the previous definition (<code>(b = F) & (b = F) := (b = F);</code>) has been generalized out.
+	The definition now consists of three statements, instead of four.
+</p>
 <!--
-	<li><a href="#complex_operations">The process of defining more complicated operations, and useful syntax for the types involved</a></li>
-<h2 id="complex_operations">The process of defining more complicated operations, and useful syntax for the types involved</h2>
-
-
 	Recall that concatenating symbols increases cardinality by the product of the substituant cardinalites.
 	Using the earlier defined decimal digit <code>d</code> for an example, if we wanted to describe an operator <code>#</code>
 	between two <code>d</code> symbols, that would look like:
