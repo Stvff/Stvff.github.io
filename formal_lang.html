@@ -17,6 +17,7 @@
 	<ul>
 		<li><a href="#logical_conjunction">Case study: Logical_Conjunction</a></li>
 		<li><a href="#modular_addition">Case study: Modular Addition</a></li>
+<!--		<li><a href="#binary_addition">Case study: Binary Addition</a></li>-->
 	</ul>
 <!--<li><a href="#"></a></li>-->
 </ul>
@@ -201,59 +202,46 @@ F & F := F;
 	for <code>&</code> (defined right before this chapter).<br/>
 	Looking at all the left-side arguments for <code>+</code> (on the left side of <code>:=</code>), we see that every possible
 	'sub-symbol' of <code>d</code> is addressed, from <code>0</code> to <code>9</code>.
-	Looking at all the right-side arguments, we see the same.
-</p><p>
+	Looking at all the right-side arguments, we see the same.<br/>
+	There is some sort of implied limit to the minimum amount of statements one needs to describe operations like this,
+	but let's not think too hard about that yet.
+</p>
+
+<!--
+<h3 id="binary_addition">Case study: Binary Addition</h3>
+<p>
+<pre><code>
+b := 0, 1;
+u := b b;
+n := b b b b;
+
+(b = 1) & (b = 1) := (b = 1);
+(b = 0) &  b      := (b = 0);
+ b      & (b = 0) := (b = 0);
+
+ b      | (b = 1) := (b = 1);
+(b = 1) |  b      := (b = 1);
+(b = 0) | (b = 0) := (b = 0);
+
+b_l + b_r := (u = (b_l | b_r) (b_l & b_r));
+
+(u_l = b_0l b_1l) + (u_r = b_0r b_1r) := (
+
+
+(n_l = b_0l b_1l b_2l b_3l) + (n_r = b_0r b_1r b_2r b_3r) := (b_0_l + b_0_r)
+
+</code></pre>
+
+</p>
+-->
+
+<!--
+<pre><code></code></pre>
+
+<p>
 	Without immediate proof, I propose a theorem:<br/>
 	If an operation with two arguments is an automorphism, the minimum amount of definition statements
 	required for full coverage is bounded between C and 2×C, where C is the cardinality of the symbol it operates on.<br/>
 </p>
 
-<!--
-	We might prove this later, but for now, let's look at some other things.
-
-<pre><code>(d = 1) + (d = 0) := (d = 1);
-(d = 1) + (d = 1) := (d = 2);
-(d = 1) + (d = 2) := (d = 3);
-(d = 1) + (d = 3) := (d = 4);
-(d = 1) + (d = 4) := (d = 5);
-(d = 1) + (d = 5) := (d = 6);
-(d = 1) + (d = 6) := (d = 7);
-(d = 1) + (d = 7) := (d = 8);
-(d = 1) + (d = 8) := (d = 9);
-(d = 1) + (d = 9) := (d = 0);
-</code></pre>
-
-<pre><code>(d = 2) + d_r := (d = 1) + ((d = 1) + d_r);
-(d = 3) + d_r := (d = 1) + ((d = 2) + d_r);
-(d = 4) + d_r := (d = 1) + ((d = 3) + d_r);
-(d = 5) + d_r := (d = 1) + ((d = 4) + d_r);
-(d = 6) + d_r := (d = 1) + ((d = 5) + d_r);
-(d = 7) + d_r := (d = 1) + ((d = 6) + d_r);
-(d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
-(d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
-</code></pre>
-
-<pre><code>(d_l = 0) + d_r := d_r;
-(d = 1) + (d = 0) := (d = 1);
-(d = 1) + (d = 1) := (d = 2);
-(d = 1) + (d = 2) := (d = 3);
-(d = 1) + (d = 3) := (d = 4);
-(d = 1) + (d = 4) := (d = 5);
-(d = 1) + (d = 5) := (d = 6);
-(d = 1) + (d = 6) := (d = 7);
-(d = 1) + (d = 7) := (d = 8);
-(d = 1) + (d = 8) := (d = 9);
-(d = 1) + (d = 9) := (d = 0);
-
-(d = 2) + d_r := (d = 1) + ((d = 1) + d_r);
-(d = 3) + d_r := (d = 1) + ((d = 2) + d_r);
-(d = 4) + d_r := (d = 1) + ((d = 3) + d_r);
-(d = 5) + d_r := (d = 1) + ((d = 4) + d_r);
-(d = 6) + d_r := (d = 1) + ((d = 5) + d_r);
-(d = 7) + d_r := (d = 1) + ((d = 6) + d_r);
-(d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
-(d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
-</code></pre>
-
-<pre><code></code></pre>
 -->
