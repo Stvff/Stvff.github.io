@@ -74,7 +74,6 @@ d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
 ~F := T;
 </code></pre>
 	It is because we were defining the <code>~</code> operator on <code>b</code>, and not on the underlying symbols.
-	As mentioned, the definition statement is one-directional. Left becomes Right, not the other way around.
 	For a simple unary operation like negation, the difference of using the 'overarching' symbol does not matter,
 	but on operations with more than one argument, and more complex types, the amount of possible interactions
 	increases significantly. So if the operation allows for it, it would help if we could generalize, to cut down
@@ -140,34 +139,105 @@ F & F := F;
 
 <h3 id="modular_addition">Case study: Modular Addition</h3>
 <p>
-
-</p>
-<!--
-	Recall that concatenating symbols increases cardinality by the product of the substituant cardinalites.
-	Using the earlier defined decimal digit <code>d</code> for an example, if we wanted to describe an operator <code>#</code>
-	between two <code>d</code> symbols, that would look like:
-<pre><code>d # d</code></pre>
-	Each <code>d</code> has a cardinality of 10, and the <code>#</code> is never defined in isolation (this is what makes it an operator),
-	it has the cardinality of itself: 1. It can only ever be <code>#</code>.<br/>
-	That means the cardinality of the given expression is 10×1×10 = 100.
-	Not needing to specify every subvalue would be advisable if we can help it.
+	For our purposes, modular addition is when you take two digits, add them together normally, and then only take the least significant digit.
+	So, for base 10, in modular addition, 5 + 5 = 0, 9 + 4 = 3 and 2 + 6 = 8.
 </p><p>
-	For a hands-on example of this, let's look at defining <code>&</code>, the logic conjunction operator.
-	We now know that the maximum amount of statements we'd need to completely describe <code>&</code> would be 4 (since it takes two booleans).<br/>
-	Something like this:
-<pre><code>(b = T) & (b = T) := (b = T);
-(b = F) & (b = T) := (b = F);
-(b = T) & (b = F) := (b = F);
-(b = F) & (b = F) := (b = F);
+	When we go to define this <code>+</code> operation, it's important to consider how many statements it would take to define it if we explicitly
+	wrote down each case. In essence, the question we're really asking is: What is the cardinality of <code>d + d</code>?
+	To answer it, we can use a nice emergent property of the fact that spaces define product-like expressions. Expressions like this, with operators
+	in them, are also product-like. So, we can simply mulitiply the cardinalities of the substituant symbols to get an answer.
+	<code>d</code> has a cardinality of 10, and <code>+</code>, since it's never defined in isolation, has a cardinality of 1.<br/>
+	<code>d + d</code> therefore has a cardinality of 10×1×10 = 100. We'd have to write out 100 statements to fully define <code>+</code>
+	if we went at it naively.
+</p><p>
+	Let's start with the 'identity' case. Adding 0 to a number leaves the number unchanged, so let's write that down.
+<pre><code>(d = 0) + d := d;</code></pre>
+	We immediately run into a problem. Which of the two <code>d</code>s is supposed to end up on the righthand side?
+	There should be some sort of indication which one to use, since really the statement above doesn't actually say what we want it to.
+</p><p>
+	There are several ways to go about solving this, but for simplicity, we introduce another piece of useful syntactic sugar for
+	brevity's sake. (Like parentheses, this too can be notationed away.)<br/>
+	With an underscore (<code>_</code>), you can subscript parts of an expression and refer to them later on the righthand side of a definition statement.
+<pre><code>(d_l = 0) + d_r := d_r;</code></pre>
+	It's an underscore in ASCII like this, but on paper, you'd write it as a proper subscript for clarity.
+	With this syntax, the part of the left of the underscore is evaluated as-is (in this example, just <code>d</code> for both), and the part on the right is only
+	used for making a distinction.
+</p><p>
+	With this new syntax in the back of our heads, we can finalize our <code>+</code>. When working with this sort of arithmetic, it's common
+	to define addition in terms of a 'Successor' function, which is just a very formal way to say "Rewrite everything as 1 + a lower number".
+	The actual full process of arriving at the full set of definitions is somewhat beyond the scope of this article, but I'll write it
+	out in full, and then we can look at some interesting features.
+<pre><code>(d = 0) + d_r := d_r;
+
+(d = 1) + (d = 0) := (d = 1);
+(d = 1) + (d = 1) := (d = 2);
+(d = 1) + (d = 2) := (d = 3);
+(d = 1) + (d = 3) := (d = 4);
+(d = 1) + (d = 4) := (d = 5);
+(d = 1) + (d = 5) := (d = 6);
+(d = 1) + (d = 6) := (d = 7);
+(d = 1) + (d = 7) := (d = 8);
+(d = 1) + (d = 8) := (d = 9);
+(d = 1) + (d = 9) := (d = 0);
+
+(d = 2) + d_r := (d = 1) + ((d = 1) + d_r);
+(d = 3) + d_r := (d = 1) + ((d = 2) + d_r);
+(d = 4) + d_r := (d = 1) + ((d = 3) + d_r);
+(d = 5) + d_r := (d = 1) + ((d = 4) + d_r);
+(d = 6) + d_r := (d = 1) + ((d = 5) + d_r);
+(d = 7) + d_r := (d = 1) + ((d = 6) + d_r);
+(d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
+(d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
 </code></pre>
-	However, when either of the arguments is <code>F</code>, we know the result will indeed be <code>F</code>, no matter the other argument.
-	So, <code>&</code> can be simplified by several terms:
-<pre><code>(b = T) & (b = T) := (b = T);
-(b = F) & b := (b = F);
-b & (b = F) := (b = F);
-</code></pre>
-</p>-->
+	The total number of definitions is 19, a little under a fifth of the total 100. This method generalizes for every base (larger than base 2)
+	and requires (2×base)-1 amount of definitions, whereas cardinality increases with base×base.
+</p>
 
 <!--
+<pre><code>(d = 1) + (d = 0) := (d = 1);
+(d = 1) + (d = 1) := (d = 2);
+(d = 1) + (d = 2) := (d = 3);
+(d = 1) + (d = 3) := (d = 4);
+(d = 1) + (d = 4) := (d = 5);
+(d = 1) + (d = 5) := (d = 6);
+(d = 1) + (d = 6) := (d = 7);
+(d = 1) + (d = 7) := (d = 8);
+(d = 1) + (d = 8) := (d = 9);
+(d = 1) + (d = 9) := (d = 0);
+</code></pre>
+
+<pre><code>(d = 2) + d_r := (d = 1) + ((d = 1) + d_r);
+(d = 3) + d_r := (d = 1) + ((d = 2) + d_r);
+(d = 4) + d_r := (d = 1) + ((d = 3) + d_r);
+(d = 5) + d_r := (d = 1) + ((d = 4) + d_r);
+(d = 6) + d_r := (d = 1) + ((d = 5) + d_r);
+(d = 7) + d_r := (d = 1) + ((d = 6) + d_r);
+(d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
+(d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
+</code></pre>
+
+<pre><code>(d_l = 0) + d_r := d_r;
+(d = 1) + (d = 0) := (d = 1);
+(d = 1) + (d = 1) := (d = 2);
+(d = 1) + (d = 2) := (d = 3);
+(d = 1) + (d = 3) := (d = 4);
+(d = 1) + (d = 4) := (d = 5);
+(d = 1) + (d = 5) := (d = 6);
+(d = 1) + (d = 6) := (d = 7);
+(d = 1) + (d = 7) := (d = 8);
+(d = 1) + (d = 8) := (d = 9);
+(d = 1) + (d = 9) := (d = 0);
+
+(d = 2) + d_r := (d = 1) + ((d = 1) + d_r);
+(d = 3) + d_r := (d = 1) + ((d = 2) + d_r);
+(d = 4) + d_r := (d = 1) + ((d = 3) + d_r);
+(d = 5) + d_r := (d = 1) + ((d = 4) + d_r);
+(d = 6) + d_r := (d = 1) + ((d = 5) + d_r);
+(d = 7) + d_r := (d = 1) + ((d = 6) + d_r);
+(d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
+(d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
+</code></pre>
+
+
 <pre><code></code></pre>
 -->

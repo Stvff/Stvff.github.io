@@ -1,9 +1,13 @@
 Buildfolder ← "build/"
 
 # the titles
-{"Stvff stuff" "ArbAsm" "Vanadis" "Dive" "Triops" "Drizzle" "Waterfall" "Sokoworm" "Math wishlist" "Thoughts on Typesetters" "Soggy" "Manyfold" "Identity Diagnosis" "Formal Description Language"}
+{"Stvff stuff" "ArbAsm" "Vanadis" "Dive" "Triops" "Drizzle" "Waterfall" "Sokoworm" "Math wishlist"
+ "Thoughts on Typesetters" "Soggy" "Manyfold" "Identity Diagnosis" "Formal Description Language"}
 # the descriptions
-{"My portfolio website" "Arbitrary arithmetic scripting language" "Memory-oriented assembly style scripting language" "Typed language experiment" "Assembly macro language" "Music spectrograph" "Radio Spectrograph" "A game in 2488 bytes" "Unsolved math problems" "Is this the best we have?" "Simple windowing library" "Guarenteed-volume 3D modeling engine" "Let's not get confused" "I thought it was neat"}
+{"My portfolio website" "Arbitrary arithmetic scripting language" "Memory-oriented assembly style scripting language"
+ "Typed language experiment" "Assembly macro language" "Music spectrograph" "Radio Spectrograph" "A game in 2488 bytes"
+ "Unsolved math problems" "Is this the best we have?" "Simple windowing library" "Guarenteed-volume 3D modeling engine"
+ "Let's not get confused" "I thought it was neat"}
 # the content
 {"index" "arbasm" "vanadis" "dive" "triops" "drizzle" "waterfall" "sokoworm" "wishlist" "typesetters" "soggy" "manyfold" "diagnosis" "formal_lang"}
 ⍚(⊂ : ".html")
