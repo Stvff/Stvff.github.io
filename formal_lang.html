@@ -15,6 +15,7 @@
 	<li><a href="#cardinality">Cardinality</a></li>
 	<li><a href="#complex_operations">Defining more complicated operations</a></li>
 	<ul>
+		<li><a href="#logical_conjunction">Case study: Logical_Conjunction</a></li>
 		<li><a href="#modular_addition">Case study: Modular Addition</a></li>
 	</ul>
 <!--<li><a href="#"></a></li>-->
@@ -110,7 +111,10 @@ d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
 <p>
 	At the end of the <a href="#equality">chapter on Equality</a>, we briefly discussed how it might work in
 	our favor to 'generalize' on operation definitions, and how it helps to use sum-like symbols for this.
-</p><p>
+</p>
+
+<h3 id="logical_conjunction">Case study: Logical Conjunction</h3>
+<p>
 	As a first, 'low stakes' example, let's look at <code>&</code>, the logic conjunction operator.
 	If we were to define it using purely <code>T</code> and <code>F</code>, it would look like this:
 <pre><code>T & T := T;
@@ -189,11 +193,24 @@ F & F := F;
 (d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
 (d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
 </code></pre>
-	The total number of definitions is 19, a little under a fifth of the total 100. This method generalizes for every base (larger than base 2)
-	and requires (2×base)-1 amount of definitions, whereas cardinality increases with base×base.
+	The total number of definitions is 19, a little under a fifth of the maximum possible 100. This method generalizes
+	for every base (larger than base 2) and requires (2×base)-1 amount of definitions, whereas cardinality increases with base×base.
+</p><p>
+	When we carefully examine what is happening here, we might actually notice a property that this 'optimized'
+	list of definitions shares with the 'optimized' list of definitions
+	for <code>&</code> (defined right before this chapter).<br/>
+	Looking at all the left-side arguments for <code>+</code> (on the left side of <code>:=</code>), we see that every possible
+	'sub-symbol' of <code>d</code> is addressed, from <code>0</code> to <code>9</code>.
+	Looking at all the right-side arguments, we see the same.
+</p><p>
+	Without immediate proof, I propose a theorem:<br/>
+	If an operation with two arguments is an automorphism, the minimum amount of definition statements
+	required for full coverage is bounded between C and 2×C, where C is the cardinality of the symbol it operates on.<br/>
 </p>
 
 <!--
+	We might prove this later, but for now, let's look at some other things.
+
 <pre><code>(d = 1) + (d = 0) := (d = 1);
 (d = 1) + (d = 1) := (d = 2);
 (d = 1) + (d = 2) := (d = 3);
@@ -237,7 +254,6 @@ F & F := F;
 (d = 8) + d_r := (d = 1) + ((d = 7) + d_r);
 (d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
 </code></pre>
-
 
 <pre><code></code></pre>
 -->
