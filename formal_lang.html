@@ -6,7 +6,7 @@
 </p>
 <h2>Table of contents</h2>
 <ul>
-	<li><a href="#outline">Outline</a></li>
+	<li><a href="#baseline">Baseline</a></li>
 	<ul>
 		<li><a href="#comma">Comma</a></li>
 		<li><a href="#space">Space</a></li>
@@ -17,11 +17,12 @@
 	<ul>
 		<li><a href="#logical_conjunction">Case study: Logical_Conjunction</a></li>
 		<li><a href="#modular_addition">Case study: Modular Addition</a></li>
+		<li><a href="#under_over_specification">Under- and Overspecification</a></li>
 <!--		<li><a href="#binary_addition">Case study: Binary Addition</a></li>-->
 	</ul>
 <!--<li><a href="#"></a></li>-->
 </ul>
-<h2 id="outline">Outline</h2>
+<h2 id="baseline">Baseline</h2>
 <p>
 	It starts with a very basic set of rules. First, we define <code>:=</code>.
 	It allows us to substitute the left side with the right side, whenever we encounter the left side in an expression.<br/>
@@ -106,6 +107,28 @@ d := 0, 1, 2, 3, 4, 5, 6, 7, 8, 9;</code></pre>
 </p><p>
 	What about symbols like <code>T</code> or <code>5</code>, that we used without giving them their own definition?
 	They simply have a cardinality of 1; they can only ever be themselves.
+</p><p>
+	These intuitions for the naming scheme are good, but there is one more feature of cardinality, particularly related to sum-like expressions,
+	that somewhat strains the word 'sum'. The given definition of cardinality is "The amount of possible states of an expression."<br/>
+	This directly means that finding the cardinality of an expression with overlapping states is more involved than just addition and multiplication.
+	For example, let's consider the most basic case of 'overlapping states':
+<pre><code>e := 3, 3;</code></pre>
+	<code>e</code> has a cardinality of 1, because despite it having two symbols in the definition, its only possible state is <code>3</code>.
+	The left and right <code>3</code> are indistinguishable. This also holds when the two symbols themselves have a larger cardinality:
+<pre><code>q := d, d;</code></pre>
+	This <code>q</code> has a cardinality of 10, despite both its elements also having a cardinality of 10, because they cover the same set of states.
+	Partial overlap has the same effect as well:
+<pre><code>g := 0, 1, 2;
+h := 1, 2, 3;
+f := g, h;
+</code></pre>
+	The cardinality of <code>f</code> is 4, its set of possible states is <code>0, 1, 2, 3</code>.
+</p><p>
+	This operation for combining sets so that they have no duplicate elements is called a <i>union</i>, and
+	very strictly speaking, the cardinality of an expression is the cardinality of the <i>union</i> of
+	the substituant possible states.<br/>
+	This more formal definition has no effect on product-like expressions, but for sum-like expressions, it means an extra step
+	has to be taken in calculating the cardinality.
 </p>
 
 <h2 id="complex_operations">Defining more complicated operations</h2>
@@ -134,7 +157,7 @@ F & F := F;
 </code></pre>
 	Then, we implement our generalization by omitting the equality check on one of the arguments if the other is <code>F</code>.
 <pre><code>(b = T) & (b = T) := (b = T);
-(b = F) &  b      := (b = F);
+(b = F) & (b = T) := (b = F);
  b      & (b = F) := (b = F);
 </code></pre>
 	In doing this, you'll notice that the last case on the previous definition (<code>(b = F) & (b = F) := (b = F);</code>) has been generalized out.
@@ -196,15 +219,16 @@ F & F := F;
 </code></pre>
 	The total number of definitions is 19, a little under a fifth of the maximum possible 100. This method generalizes
 	for every base (larger than base 2) and requires (2×base)-1 amount of definitions, whereas cardinality increases with base×base.
-</p><p>
-	When we carefully examine what is happening here, we might actually notice a property that this 'optimized'
-	list of definitions shares with the 'optimized' list of definitions
-	for <code>&</code> (defined right before this chapter).<br/>
+</p>
+
+<h3 id="under_over_specification">Under- and Overspecification</h3>
+<p>
+	When we carefully examine what is happening here, we might actually notice a property that both the previous 'optimized'
+	lists of definitions share with eachother.
 	Looking at all the left-side arguments for <code>+</code> (on the left side of <code>:=</code>), we see that every possible
 	'sub-symbol' of <code>d</code> is addressed, from <code>0</code> to <code>9</code>.
 	Looking at all the right-side arguments, we see the same.<br/>
-	There is some sort of implied limit to the minimum amount of statements one needs to describe operations like this,
-	but let's not think too hard about that yet.
+	There is some sort of implied limit to the minimum amount of statements one needs to describe operations like this.
 </p>
 
 <!--
