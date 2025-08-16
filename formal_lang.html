@@ -237,7 +237,7 @@ F & F := F;
 (b = F) & (b = T) := (b = F);
  b      & (b = F) := (b = F);
 </code></pre>
-	We take the all the expressions on the right side of the definitions:
+	We take all the expressions on the left side of the definitions:
 <pre><code>(b = T) & (b = T), (b = F) & (b = T), b & (b = F)</code></pre>
 	and compute the cardinality (take note that concatenation takes a higher precedence than the comma).
 	There are a couple ways to go about this, but let's start by removing the <code>&</code>s, since they occur in every
@@ -255,9 +255,68 @@ F & F := F;
 </p><p>
 	So, the total cardinality of our specification of <code>&</code> is 4, which matches the cardinality of <code>b & b</code>,
 	and therefore we know that it is fully specified.
+</p><p>
+	Now, we might be lazy, and instead (rather sloppily) write something like:
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) &  b     := (b = F);
+</code></pre>
+	Later, after a good night's rest, we look at it again, notice something's off, and get to work computing the cardinality.
+<pre><code>1:
+	(b = T) & (b = T), (b = f) & b
+2:
+	T T, F b
+3:
+	T T, F (F, T)
+4:
+	T T, F F, F T
+</code></pre>
+	Ah, the cardinality is 3, even though we needed 4... This is <i>underspecification</i>: not all cases of the operation are specified.
+</p><p>
+	A quickthinking reader might already have considered what it would be like for this process to produce a cardinality greater than the
+	fully specified cardinality. Sadly, the described process can never produce such a cardinality (unless we cheated (I will not elaborate (lest someone cheats))).
+	The proof is left as an excercise to the reader for now.
+</p><p>
+	However, the title of this chapter still says what it does, so what else am I hiding? Suppose the following alternative specification of <code>&</code>
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) &  b      := (b = F);
+ b      & (b = F) := (b = F);
+</code></pre>
+	If we go through the process of finding the cardinality of it, we'll see something that might raise an eyebrow, but the result will be 4.
+	A different process will be required to catch what's wrong with this specification. We do the same as earlier, taking the left sides
+	of the statements and simplifying, but we'll keep them seperated:
+<pre><code>1:
+	(b = T) & (b = T)
+	(b = F) &  b
+	 b      & (b = F)
+2:
+	T T
+	F b
+	b F
+3:
+	T      T
+	F      (F, T)
+	(F, T) F
+4:
+	T T
+	F F, F T
+	F T, F F
+</code></pre>
+	Now, we take the cardinalities of these seperate expressions, and only then sum them. The first expression has a cardinality of 1, the second 2, and the third also 2.
+	This different, <i>disjoint</i> cardinality gives a result of 5. That's more than 4. Indeed, the <code>F F</code> shows up twice in our specification: it is <i>overspecified</i>.
+</p><p>
+	Some more things of note about these attributes is that they are not mutually exclusive with eachother. In fact, an operation can even be both fully specified as well as overspecified,
+	though it would not be <i>correctly</i> specified.
+</p><p>
+	A specification that is both underspecified and overspecified is:
+<pre><code>(b = F) &  b      := (b = F);
+ b      & (b = F) := (b = F);
+</code></pre>
+	To make matters worse, its disjoint cardinality is 4 as well. This is possible because overspecification happens when there are duplicate states in the specification.
+	The correct way to detect this is by looking at the difference between the normal and disjoint cardinalities; if there is any, the specification is overspecified.
 </p>
 
 <!--
+
 	When we carefully examine what is happening here, we might actually notice a property that both the previous 'optimized'
 	lists of definitions share with eachother.
 	Looking at all the left-side arguments for <code>+</code> (on the left side of <code>:=</code>), we see that every possible
