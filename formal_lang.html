@@ -232,8 +232,29 @@ F & F := F;
 </p><p>
 	A set of statements is itself sum-like, though in a more nuanced sense. We can collect all the expressions on the left of the <code>:=</code>,
 	and compute the cardinality of those expressions together as if they were sum-like. When we find this cardinality for a set of definitions that specify
-	an operation it is called <i>the cardinality of the specification</i>. When we take the cardinality of all the statements on the right of the <code>:=</code>,
-	that is called <i>the cardinality of the operation</i>.
+	an operation it is called <i>the cardinality of the specification</i>. To see this in action, we'll repeat our definition of <code>&</code>.
+<pre><code>(b = T) & (b = T) := (b = T);
+(b = F) & (b = T) := (b = F);
+ b      & (b = F) := (b = F);
+</code></pre>
+	We take the all the expressions on the right side of the definitions:
+<pre><code>(b = T) & (b = T), (b = F) & (b = T), b & (b = F)</code></pre>
+	and compute the cardinality (take note that concatenation takes a higher precedence than the comma).
+	There are a couple ways to go about this, but let's start by removing the <code>&</code>s, since they occur in every
+	product-like part, and have a cardinality of 1.
+<pre><code>(b = T) (b = T), (b = F) (b = T), b (b = F)</code></pre>
+	Next, because we're just analyzing cardinality, we can omit all the <code>b = </code> as well.
+<pre><code>T T, F T, b F</code></pre>
+	At this point, we basically know the cardinality already, but for completeness sake, we should fully expand the expression.
+<pre><code>T T, F T, (F, T) F</code></pre>
+	The first and second items of this collection (<code>T T</code> and <code>F T</code>) have a cardinality of 1, and are not the
+	same state, so we have at least a total cardinality of 2. Then the final item (<code>(F, T) F</code>) might be more
+	difficult to immediately spot the cardinality of, but when we list the possible states that it could be in:
+<pre><code>F F, T F</code></pre>
+	We can see that that part's cardinality is also 2, and has no overlap with the first two items.
+</p><p>
+	So, the total cardinality of our specification of <code>&</code> is 4, which matches the cardinality of <code>b & b</code>,
+	and therefore we know that it is fully specified.
 </p>
 
 <!--
@@ -243,6 +264,9 @@ F & F := F;
 	'sub-symbol' of <code>d</code> is addressed, from <code>0</code> to <code>9</code>.
 	Looking at all the right-side arguments, we see the same.<br/>
 	There is some sort of implied limit to the minimum amount of statements one needs to describe operations like this.
+
+F (F, T), (F, T) F
+F F, F T, F F, T F
 
 <h3 id="binary_addition">Case study: Binary Addition</h3>
 <p>
