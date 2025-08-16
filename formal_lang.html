@@ -185,16 +185,16 @@ F & F := F;
 </p><p>
 	There are several ways to go about solving this, but for simplicity, we introduce another piece of useful syntactic sugar for
 	brevity's sake. (Like parentheses, this too can be notationed away.)<br/>
-	With an underscore (<code>_</code>), you can subscript parts of an expression and refer to them later on the righthand side of a definition statement.
+	With an underscore (<code>_</code>), we can subscript parts of an expression and refer to them later on the righthand side of a definition statement.
 <pre><code>(d_l = 0) + d_r := d_r;</code></pre>
-	It's an underscore in ASCII like this, but on paper, you'd write it as a proper subscript for clarity.
+	It's an underscore in ASCII like this, but on paper, we'd write it as a proper subscript for clarity.
 	With this syntax, the part of the left of the underscore is evaluated as-is (in this example, just <code>d</code> for both), and the part on the right is only
 	used for making a distinction.
 </p><p>
 	With this new syntax in the back of our heads, we can finalize our <code>+</code>. When working with this sort of arithmetic, it's common
 	to define addition in terms of a 'Successor' function, which is just a very formal way to say "Rewrite everything as 1 + a lower number".
-	The actual full process of arriving at the full set of definitions is somewhat beyond the scope of this article, but I'll write it
-	out in full, and then we can look at some interesting features.
+	The entire process of arriving at the complete set of definitions is somewhat beyond the scope of this article, but I'll write the result
+	out in full, and then we can look at some interesting features later.
 <pre><code>(d = 0) + d_r := d_r;
 
 (d = 1) + (d = 0) := (d = 1);
@@ -218,20 +218,32 @@ F & F := F;
 (d = 9) + d_r := (d = 1) + ((d = 8) + d_r);
 </code></pre>
 	The total number of definitions is 19, a little under a fifth of the maximum possible 100. This method generalizes
-	for every base (larger than base 2) and requires (2×base)-1 amount of definitions, whereas cardinality increases with base×base.
+	for every base (larger than base 2) and requires (2×base)-1 amount of definitions, whereas the total cardinality for this operation scales as base×base.
+	What is the relation between these numbers? To properly understand this, we must understand what it means for an operation to
+	be fully defined.
 </p>
 
 <h3 id="under_over_specification">Under- and Overspecification</h3>
 <p>
+	We will call the process of defining all cases of an operation <i>specifying</i>, and if we do our job properly, the operation will
+	be <i>fully specified</i>. There are two elements to determining if an operation is fully specified. The first, we've discussed in the previous chapter,
+	which is the insight that an expression (like <code>d + d</code>) has a cardinality (product-like, in the majority of cases). The second element of importance
+	is slightly hinted at in the notation of statements, and the fact that they are seperated by semicolons.
+</p><p>
+	A set of statements is itself sum-like, though in a more nuanced sense. We can collect all the expressions on the left of the <code>:=</code>,
+	and compute the cardinality of those expressions together as if they were sum-like. When we find this cardinality for a set of definitions that specify
+	an operation it is called <i>the cardinality of the specification</i>. When we take the cardinality of all the statements on the right of the <code>:=</code>,
+	that is called <i>the cardinality of the operation</i>.
+</p>
+
+<!--
 	When we carefully examine what is happening here, we might actually notice a property that both the previous 'optimized'
 	lists of definitions share with eachother.
 	Looking at all the left-side arguments for <code>+</code> (on the left side of <code>:=</code>), we see that every possible
 	'sub-symbol' of <code>d</code> is addressed, from <code>0</code> to <code>9</code>.
 	Looking at all the right-side arguments, we see the same.<br/>
 	There is some sort of implied limit to the minimum amount of statements one needs to describe operations like this.
-</p>
 
-<!--
 <h3 id="binary_addition">Case study: Binary Addition</h3>
 <p>
 <pre><code>
