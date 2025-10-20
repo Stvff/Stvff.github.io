@@ -30,16 +30,16 @@
 <pre><code class="Odin">import "soggy"
 
 main :: proc() {
-    raw_winfo := soggy.Winfo {
+    winfo := soggy.Winfo {
         window_title = "name",
         hi_init_size = {1280, 800},
         lo_scale = 4,
         hi_minimum_size = {600, 600},
     }
-    if !soggy.start(winfo) do return
-    defer soggy.exit(winfo)
-    
-    for soggy.loop(winfo) {
+    if !soggy.start(&winfo) do return
+    defer soggy.exit(&winfo)
+
+    for soggy.loop(&winfo) {
         if winfo.keyboard[soggy.KEY_ESC] == .press do break
         /* do things here */
     }
