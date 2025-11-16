@@ -8,36 +8,42 @@
 <h2>Memory Model</h2>
 
 <h2>Indexing</h2>
-Normal way that we are used to:
-<pre><code>value = array[index];
-</code></pre>
-
-But indexing can always fail, we'll add a fallback value.
-<pre><code>value = array[index] else use 0;
-</code></pre>
-
-This is a whole branch of course.
-<pre><code>value = array[index] else {
+<p>
+	This is the standard array indexing that we are used to:
+	<pre><code>value = array[index];</code></pre>
+</p><p>
+	However, indexing can fail. The index can be out of bounds, or the point in memory is unmapped, causing a segmentation fault on dereference.
+	Making indexes loop within array bounds <i>kind of</i> fixes the first, but does not fix the second.
+	(I say "<i>kind of</i>", because when you have a malformed index, you don't want it to sample essentially
+	random values in your array, you want to be more aware about it.)
+</p><p>
+	Other languages might at this point introduce some version of 'Nullable' or 'Option' type.
+	However, this suggests that the problem is the value, when really it was the array (and the indexing/dereference operation itself).
+	More importantly, it promotes kicking the can down the road, and such 'Option' types tend to be internally represented by a struct with a boolean,
+	which have terrible size properties. Not to mention the extra complexity on the type system.
+</p><p>
+	Really what we want is to bring the branches of the unreliable operation right to the actual location where it happens.
+</p><p>
+	To start, we'll add a fallback value.
+	<pre><code>value = array[index] else use 0;</code></pre>
+</p><p>
+	This is a whole branch of course.
+	<pre><code>value = array[index] else {
 	log("Index out of bounds!", index);
 	use 0;
-}
-</code></pre>
-
-But what only that, just the optional branch happens, as well as the main flow.
-As an example, when you need to print a value with an index, you don't want to print
-the backup value.
-So, there needs to be a 'success' branch:
-<pre><code>value = array[index] {
+}</code></pre>
+</p><p>
+	Some operations should run only if indexing was succesful, so there needs to be a 'success' branch as well:
+	<pre><code>value = array[index] {
 	log(index, ":", value);
 } else {
 	log("Index out of bounds!", index);
 	use 0;
-}
-</code></pre>
-
-Now we run into the problem that this is very verbose, more verbose than practical for
-when multiple arrays need to be indexed multiple times.
-<pre><code>index = index*10 + 3;
+}</code></pre>
+</p><p>
+	Now we run into the problem that this is very verbose, more verbose than practical for
+	when multiple arrays need to be indexed multiple times.
+	<pre><code>index = index*10 + 3;
 assure index in array_one & array_two {} else {
 	log("!");
 	use 9;
@@ -50,5 +56,5 @@ for {
 	constrain index to array1.size;
 
 	value = array1[index] + array2[index];
-}
-</code></pre>
+}</code></pre>
+</p>
