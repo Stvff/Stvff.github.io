@@ -1,0 +1,32 @@
+<h1>Beyond Static Analysis</h1>
+
+<pre><code>
+thing :: (index: int) -> Value {
+
+	{
+		index = index*10 + 3;
+		assure index in array1.size else {
+			log("!");
+			use 9;
+		}
+
+		constrain array2.size in array1.size;
+		for {
+			i += 1;
+			//constrain index in array1.size;
+			constrain index to array1.size;
+
+			value = array1[index] + array2[index];
+		}
+	}
+
+	value := array[index] {
+		log(index, ":", value);
+	} else {
+		log("Index out of bounds!", index);
+		use 0;
+	}
+
+	return value;
+}
+</code></pre>
