@@ -7,6 +7,7 @@
 
 <h2>Memory Model</h2>
 
+
 <h2>Indexing</h2>
 <p>
 	This is the standard array indexing that we are used to:
@@ -42,7 +43,33 @@
 }</code></pre>
 </p><p>
 	Now we run into the problem that this is very verbose, more verbose than practical for
-	when multiple arrays need to be indexed multiple times.
+	when multiple arrays need to be indexed multiple times. Next to that, there is also overhead for checking the index and the mapping
+	of memory pages.
+</p><p>
+	It would be good if there was a way to ensure that the index stays in the correct range, and that the array exists, ahead of time (before doing an array-intensive operation).
+	Traditionally, this could be done with a <code>for value in array</code> type of construct. While that is a useful structure, there must be room for more unsequential indexing,
+	without losing safety guarentees.
+</p><p>
+	<pre><code>constrain i to array_one constrain ii to array_two constrain iii to array_one {
+	body
+} else {
+	// scope of iii, array_one
+} else {
+	// scope of ii, array_two
+} else {
+	// scope of i, array_one
+}</code></pre>
+	<pre><code>constrain curr to array constrain prev to array {
+	array[curr] = array[curr] + array[prev];
+	prev += 1;
+	curr += 1;
+	loop;
+} else {
+	if prev < 0 {
+		prev = 0;
+		loop;
+	}
+}</code></pre>
 	<pre><code>index = index*10 + 3;
 assure index in array_one & array_two {} else {
 	log("!");
