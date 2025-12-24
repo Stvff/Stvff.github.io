@@ -8,7 +8,31 @@
 	We want a datastructure where similar coordinates in space result in similar indices in linear memory.
 	An important implication of this is that selecting a subsection of the total dataset becomes a more local
 	operation as well, regardless of the direction or dimensionality that subsection has.
+</p>
+	<h2>The normal approach</h2>
+<p>
+	The standard way to save any amount of dimensions in a contiguous array is where every dimension consists of its subdimensions.
+	A 2D array is a collection of many 1D lines, a 3D array is a collection of 2D slices, and so forth.
+	Any particular coordinate is indexed like so:
+<pre><code class="jai">int index = 0;
+for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
+	index *= dimension_sizes[dim];
+	index += coordinate[dim];
+}
+</code></pre>
+	A notable assumption here is that any particular dimension will have a maximum index (a size). This is a reasonable assumption,
+	so in this article, we will accept it.
+</p><p>
+	This approach is great for a number of reasons, and can be tailored for datasets where one thing is more important than another.
+	However, it lacks locality. Incrementing along the 'lower' dimensions results in small index changes, but these index distances
+	increase rapidly as you increment along the 'higher' dimensions. A random walk would result in big index jumps most of the time.
+</p><p>
+	This 'favoritism' for lower dimensions is the problem of interest, and one we'd like to solve.
+</p>
+	<h2>A more local approach</h2>
+<p>
+	There is a very large amount of ways to go about this, but I first want to explore a 'most simple' method: binary space partitioning.
+	We'll find that, besides it being 'simple', there is another reason to explore it next to the standard approach, but we will get to that.
 </p><p>
 
-</p><p>
 </p>
