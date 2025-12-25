@@ -36,7 +36,8 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 </p><p>
 	In this approach, the entire space is divided in progressively finer halves. The indexing begins with the largest scale: "Is this coordinate on the high or low end of this dimension?".
 	This is done for every dimension, and then we can ask the same question about the section of space that is left, and continue until the desired resolution is reached.<br/>
-	A code implementation of this can look as follows:
+</p><p>
+	To understand this better, let's first look at a 1D case. The length of the array should be a power of two (otherwise it can not be binary partitioned all the way down)
 <pre><code class="c">int index = 0;
 </code></pre>
 </p>
