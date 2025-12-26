@@ -25,19 +25,26 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 </p><p>
 	This approach is great for a number of reasons, and can be tailored for datasets where one thing is more important than another.
 	However, it lacks locality. Incrementing along the 'lower' dimensions results in small index changes, but these index distances
-	increase rapidly as you increment along the 'higher' dimensions. A random walk would result in big index jumps most of the time.
+	increase rapidly as you increment along the 'higher' dimensions.
 </p><p>
 	This 'favoritism' for lower dimensions is the problem of interest, and one we'd like to solve.
 </p>
 	<h2>A more local approach</h2>
 <p>
-	There is a very large amount of ways to go about this, but I first want to explore a 'most simple' method: binary space partitioning.
-	We'll find that, besides it being 'simple', there is another reason to explore it next to the standard approach, but we will get to that.
+	To explain this, let's take a 3D example of an array with the following dimensions:
+<pre><code>int dimension_sizes[3];
+dimension_sizes[0] = 525;
+dimension_sizes[1] = 66;
+dimension_sizes[2] = 2275;
+</code></pre>
+	given a coordinate (<code>x, y, z</code>) and using the given method, the index would be:
+<pre><code>int index = 66*575*z + 575*y + x;
+</code></pre>
 </p><p>
-	In this approach, the entire space is divided in progressively finer halves. The indexing begins with the largest scale: "Is this coordinate on the high or low end of this dimension?".
-	This is done for every dimension, and then we can ask the same question about the section of space that is left, and continue until the desired resolution is reached.<br/>
-</p><p>
-	To understand this better, let's first look at a 1D case. The length of the array should be a power of two (otherwise it can not be binary partitioned all the way down)
-<pre><code class="c">int index = 0;
+	Now we'll take a small leap of faith, and decompose the dimension sizes into their prime factors.
+<pre><code>int dimension_sizes[3];
+dimension_sizes[0] = 2 * 5 * 5 * 7 ;
+dimension_sizes[1] = 2 * 3 * 11    ;
+dimension_sizes[2] = 5 * 5 * 7 * 13;
 </code></pre>
 </p>
