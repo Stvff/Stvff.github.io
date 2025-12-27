@@ -80,5 +80,10 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 	Something more interesting happens when we collect the bits row-wise, per split. We end up with 4 numbers
 	(110, 101, 001, 011) that each represent a selection of a progressively smaller region. In fact,
 	when the coordinates change their least significant bits, only the smallest subselections change. This
-	is exactly the quality we are looking for.
+	is exactly the property we are looking for.
+</p><p>
+	From here on, the next question is: how do we combine these 4 numbers to form a standard 1D index?<br/>
+	The same way as we've always done, silly!!!!!<br/>
+	By offsetting each sub-index by the maximum of all the previous indices. In practice, that looks the same
+	as simple concatenating these bits into one larger number: 110101001011. ^.^
 </p>
