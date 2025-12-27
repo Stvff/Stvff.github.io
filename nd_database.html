@@ -82,7 +82,7 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 </table>
 </p><p>
 	This table holds an interesting insight: When we collect bits column-wise, per dimension (1100, 1001, 0111),
-	we end up with the coordinates that we singled in on! (in the endianness of your choosing)
+	we end up with the coordinates that we singled in on! (in big-endian)
 	This is true because the binary encoding of a number <em>is</em> binary partitioning along a number line.
 </p><p>
 	Something more interesting happens when we collect the bits row-wise, per split. We end up with 4 numbers
