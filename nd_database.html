@@ -1,4 +1,4 @@
-<h1>N-Dimensional database with decent locality</h1>
+<h1>N-Dimensional arrays with decent locality</h1>
 <p>
 	At some point in a person's life, there comes a time where a dataset has more than one dimension.
 	It is imperative to their career that the datastructure they choose for this is regular,
@@ -31,7 +31,60 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 </p>
 	<h2>A more local approach</h2>
 <p>
-	To explain this, let's take a 3D example of an array with the following dimensions:
+	We can take any space and split it in half in any particular direction. If we do this for all orthogonal directions,
+	we end up with a space of the same proportions as the original, but half the size (when measured along its edges).<br/>
+	On this remaining space, we can perform that same splitting operation, and continue until we've zeroed in on an
+	arbitrarily specific spot in space.
+</p><p>
+	This splitting in half, and choosing a side, can be encoded with a single bit: 0 for low, 1 for high.
+	To select down to a specific spot, we need to both keep track of which orthogonal direction (aka dimension) we've split along,
+	as well as how many times we've done the split.
+	A 3D, 4-split example:
+<table>
+<!--  <colgroup>
+    <col span="2" />
+    <col class="column-background" />
+    <col class="column-fixed-width" />
+    <col class="column-background" />
+    <col class="column-background-border" />
+    <col span="2" class="column-fixed-width" />
+  </colgroup>-->
+  <tr>
+    <td>&nbsp;</td>
+    <th>dim 0</th>
+    <th>dim 1</th>
+    <th>dim 2</th>
+  </tr>
+  <tr>
+    <th>split 0</th>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <th>split 1</th>
+    <td>1</td>
+    <td>0</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <th>split 2</th>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <th>split 3</th>
+    <td>0</td>
+    <td>1</td>
+    <td>1</td>
+  </tr>
+</table>
+
+</p><p>
+<!--
+</p><p>
+	Let's take a 3D example of an array with the following dimensions:
 <pre><code>int dimension_sizes[3];
 dimension_sizes[0] = 525;
 dimension_sizes[1] = 66;
@@ -47,4 +100,11 @@ dimension_sizes[0] = 2 * 5 * 5 * 7 ;
 dimension_sizes[1] = 2 * 3 * 11    ;
 dimension_sizes[2] = 5 * 5 * 7 * 13;
 </code></pre>
+	Notice how we're multiplying these values as rows in a table. Instead, we'll multiply them as columns.
+<pre><code>int resolution_levels[4];
+resolution_levels[0] = 7 *      13;
+resolution_levels[1] = 5 * 11 * 7 ;
+resolution_levels[2] = 5 * 3  * 5 ;
+resolution_levels[3] = 2 * 2  * 5 ;
+</code></pre>-->
 </p>
