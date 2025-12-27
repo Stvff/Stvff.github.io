@@ -41,14 +41,6 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 	as well as how many times we've done the split.
 	A 3D, 4-split example:
 <table>
-<!--  <colgroup>
-    <col span="2" />
-    <col class="column-background" />
-    <col class="column-fixed-width" />
-    <col class="column-background" />
-    <col class="column-background-border" />
-    <col span="2" class="column-fixed-width" />
-  </colgroup>-->
   <tr>
     <td>&nbsp;</td>
     <th>dim 0</th>
@@ -82,34 +74,11 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 </table>
 </p><p>
 	This table holds an interesting insight: When we collect bits column-wise, per dimension (1100, 1001, 0111),
-	we end up with the coordinates that we singled in on! (in big-endian)
+	we end up with the coordinates that we zeroed in on! (in big-endian)
 	This is true because the binary encoding of a number <em>is</em> binary partitioning along a number line.
 </p><p>
 	Something more interesting happens when we collect the bits row-wise, per split. We end up with 4 numbers
-	(110, 101, 001, 011) that each represent a selection of a progressively smaller region.
-<!--
-</p><p>
-	Let's take a 3D example of an array with the following dimensions:
-<pre><code>int dimension_sizes[3];
-dimension_sizes[0] = 525;
-dimension_sizes[1] = 66;
-dimension_sizes[2] = 2275;
-</code></pre>
-	given a coordinate (<code>x, y, z</code>) and using the given method, the index would be:
-<pre><code>int index = 66*575*z + 575*y + x;
-</code></pre>
-</p><p>
-	Now we'll take a small leap of faith, and decompose the dimension sizes into their prime factors.
-<pre><code>int dimension_sizes[3];
-dimension_sizes[0] = 2 * 5 * 5 * 7 ;
-dimension_sizes[1] = 2 * 3 * 11    ;
-dimension_sizes[2] = 5 * 5 * 7 * 13;
-</code></pre>
-	Notice how we're multiplying these values as rows in a table. Instead, we'll multiply them as columns.
-<pre><code>int resolution_levels[4];
-resolution_levels[0] = 7 *      13;
-resolution_levels[1] = 5 * 11 * 7 ;
-resolution_levels[2] = 5 * 3  * 5 ;
-resolution_levels[3] = 2 * 2  * 5 ;
-</code></pre>-->
+	(110, 101, 001, 011) that each represent a selection of a progressively smaller region. In fact,
+	when the coordinates change their least significant bits, only the smallest subselections change. This
+	is exactly the quality we are looking for.
 </p>
