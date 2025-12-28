@@ -1,4 +1,4 @@
-<h1>N-Dimensional arrays with decent locality</h1>
+<h1 id="top">N-Dimensional arrays with decent locality</h1>
 <p>
 	At some point in a person's life, there comes a time where a dataset has more than one dimension.
 	It is imperative to their career that the datastructure they choose for this is regular,
@@ -14,7 +14,7 @@
 	A 2D array is a collection of many 1D lines, a 3D array is a collection of 2D slices, and so forth.
 	Any particular coordinate is indexed like so:
 <pre><code class="c">int index = 0;
-for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
+for (int dim = amount_of_dimensions - 1; dim >= 0; dim -= 1) {
 	index *= dimension_sizes[dim];
 	index += coordinate[dim];
 }
@@ -86,7 +86,7 @@ for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
 	if (power > amount_of_splits) amount_of_splits = power;
 }
 </code></pre>
-	It should be noted that, if <code>amount_of_splits</code>×<code>amount_of_dimensions</code> exceeds 48,
+	It should be noted that, if <code>amount_of_splits</code> × <code>amount_of_dimensions</code> exceeds 48,
 	your array is too large to be directly indexed by a modern x86-64 CPU. Depending on the
 	dimension sizes, this could be partially mitigated by a more efficient packing
 	(as we will see in the next chapter), but otherwise you will have to resort to splitting your
@@ -94,7 +94,7 @@ for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
 </p><p>
 	Now that we have the amount of splits, we can convert standard coordinates to our BSP index:
 <pre><code class="c">int index = 0;
-for (int shift = amount_of_splits-1; shift &gt;= 0; shift -= 1) {
+for (int shift = amount_of_splits - 1; shift &gt;= 0; shift -= 1) {
 	int i = 0;
 	for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
 		int ii = 1 & (coordinate[dim] >> shift);
@@ -150,4 +150,12 @@ for (int shift = amount_of_splits-1; shift &gt;= 0; shift -= 1) {
 </code></pre>
 	There is a gap where the second dimension does not supply enough prime factors, but we could insert 1 as a filler number here,
 	since <code>y/66</code> will always be less than 1.
+<pre><code class="c">int index = 0;
+for (int level = amount_of_factors - 1; level >= 0; level -= 1) {
+	index *= level_sizes[level];
+	for (int dim = amount_of_dimensions - 1; dim >= 0; dim -= 1) {
+		index += (factors[dim][level]*coordinate[dim])/dimension_sizes[dim];
+	}
+}
+</code></pre>
 </p>
