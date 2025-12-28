@@ -40,11 +40,11 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 	as well as how many times we've done the split.
 	A 3D, 4-split example:
 <table>
-	<tr> <td>&nbsp;</td> <th>dim 0</th> <th>dim 1</th> <th>dim 2</th> </tr>
-	<tr> <th>split 0</th> <td>1</td> <td>1</td> <td>0</td> </tr>
-	<tr> <th>split 1</th> <td>1</td> <td>0</td> <td>1</td> </tr>
-	<tr> <th>split 2</th> <td>0</td> <td>0</td> <td>1</td> </tr>
-	<tr> <th>split 3</th> <td>0</td> <td>1</td> <td>1</td> </tr>
+	<tr> <td>&nbsp;</td>  <th>dim 0</th> <th>dim 1</th> <th>dim 2</th> </tr>
+	<tr> <th>split 0</th> <td>1</td>     <td>1</td>     <td>0</td>     </tr>
+	<tr> <th>split 1</th> <td>1</td>     <td>0</td>     <td>1</td>     </tr>
+	<tr> <th>split 2</th> <td>0</td>     <td>0</td>     <td>1</td>     </tr>
+	<tr> <th>split 3</th> <td>0</td>     <td>1</td>     <td>1</td>     </tr>
 </table>
 </p><p>
 	This table holds an interesting insight: When we collect bits column-wise, per dimension (1100, 1001, 0111),
@@ -86,7 +86,7 @@ for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
 	if (power > amount_of_splits) amount_of_splits = power;
 }
 </code></pre>
-	It should be noted that, if <code>amount_of_splits*amount_of_dimensions</code> exceeds 48,
+	It should be noted that, if <code>amount_of_splits</code>×<code>amount_of_dimensions</code> exceeds 48,
 	your array is too large to be directly indexed by a modern x86-64 CPU. Depending on the
 	dimension sizes, this could be partially mitigated by a more efficient packing
 	(as we will see in the next chapter), but otherwise you will have to resort to splitting your
@@ -94,10 +94,10 @@ for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
 </p><p>
 	Now that we have the amount of splits, we can convert standard coordinates to our BSP index:
 <pre><code class="c">int index = 0;
-for (int split = amount_of_splits; split &gt; 0; split += 1) {
+for (int shift = amount_of_splits-1; shift &gt;= 0; shift -= 1) {
 	int i = 0;
 	for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
-		int ii = 1 & (coordinate[dim] >> split);
+		int ii = 1 & (coordinate[dim] >> shift);
 		i |= ii &lt;&lt; dim;
 	}
 	index &lt;&lt;= amount_of_dimensions;
@@ -108,7 +108,7 @@ for (int split = amount_of_splits; split &gt; 0; split += 1) {
 </p>
 	<h3>Dissimilar dimension sizes</h3>
 <p>
-	If <code>log_2(smallest_dimension_size)</code> is very dissimilar from <code>log_2(largest_dimension_size)</code>,
+	If the smallest dimension size is very dissimilar from the largest dimension size,
 	many bits in the coarse splitting stages stay unused. Our straightforward "concatenate all bits" approach is
 	<em>too</em> straightforward for these cases.
 </p><p>
@@ -118,7 +118,36 @@ for (int split = amount_of_splits; split &gt; 0; split += 1) {
 	and additionally adds a lot of integer divides to the program, but it's still interesting to look at.
 </p><p>
 	Let's take the following dimension sizes as an example: 525, 66, 2275.
-<!--2 5 5 7 ;
-2 3 11    ;
-5 5 7 13;-->
+	We'll organize their prime factors in another table:
+<table>
+	<tr> <td>&nbsp;</td>  <th>dim 0</th> <th>dim 1</th> <th>dim 2</th> </tr>
+	<tr> <th>split 0</th> <td>7</td>     <td> </td>     <td>13</td>    </tr>
+	<tr> <th>split 1</th> <td>5</td>     <td>11</td>    <td>7</td>     </tr>
+	<tr> <th>split 2</th> <td>5</td>     <td>3</td>     <td>5</td>     </tr>
+	<tr> <th>split 3</th> <td>2</td>     <td>2</td>     <td>5</td>     </tr>
+</table>
+</p><p>
+	Multiplying the rows gives the following sizes for the levels of resolution:
+<table>
+	<tr> <th>level 0</th> <th>level 1</th> <th>level 2</th> <th>level 3</th> </tr>
+	<tr> <td>91</td>      <td>385</td>     <td>75</td>      <td>30</td>     </tr>
+</table>
+</p><p>
+	Deriving coordinates into this space from standard coordinates is where a lot of the added complexity comes in.
+	Decomposing to the coordinate at one level means you have to divide by the prime factors of the other levels.
+<pre><code class="c">int index =
+385*75*30*(x/(5*5*3) +            z/(7*5*5) ) +
+    75*30*(x/(7*5*3) + y/(3*2)  + z/(13*5*5)) +
+       30*(x/(7*5*3) + y/(11*2) + z/(13*7*5)) +
+          (x/(7*5*5) + y/(11*3) + z/(13*7*5));
+</code></pre>
+	or
+<pre><code class="c">int index =
+385*75*30*((7*x)/525 +             (13*z)/2275) +
+    75*30*((5*x)/525 + (11*y)/66 +  (5*z)/2275) +
+       30*((5*x)/525 +  (3*y)/66 +  (5*z)/2275) +
+          ((3*x)/525 +  (2*y)/66 +  (2*z)/2275);
+</code></pre>
+	There is a gap where the second dimension does not supply enough prime factors, but we could insert 1 as a filler number here,
+	since <code>y/66</code> will always be less than 1.
 </p>
