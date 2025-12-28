@@ -6,8 +6,7 @@
 </p><p>
 	What we will be doing today is none of that. We want to be cool and esoteric with it.<br/>
 	We want a datastructure where similar coordinates in space result in similar indices in linear memory.
-	An important implication of this is that selecting a subsection of the total dataset becomes a more local
-	operation as well, regardless of the direction or dimensionality that subsection has.
+	This property is known as locality, and is often desired in high performance programs.
 </p>
 	<h2>The normal approach</h2>
 <p>
@@ -34,43 +33,18 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 	We can take any space and split it in half in any particular direction. If we do this for all orthogonal directions,
 	we end up with a space of the same proportions as the original, but half the size (when measured along its edges).<br/>
 	On this remaining space, we can perform that same splitting operation, and continue until we've zeroed in on an
-	arbitrarily specific spot in space. This is a well-known approach called 'binary space partitioning'.
+	arbitrarily specific spot in space. This is binary space partitioning, or at least one application of it.
 </p><p>
 	This splitting in half, and choosing a side, can be encoded with a single bit: 0 for low, 1 for high.
 	To select down to a specific spot, we need to both keep track of which orthogonal direction (aka dimension) we've split along,
 	as well as how many times we've done the split.
 	A 3D, 4-split example:
 <table>
-  <tr>
-    <td>&nbsp;</td>
-    <th>dim 0</th>
-    <th>dim 1</th>
-    <th>dim 2</th>
-  </tr>
-  <tr>
-    <th>split 0</th>
-    <td>1</td>
-    <td>1</td>
-    <td>0</td>
-  </tr>
-  <tr>
-    <th>split 1</th>
-    <td>1</td>
-    <td>0</td>
-    <td>1</td>
-  </tr>
-  <tr>
-    <th>split 2</th>
-    <td>0</td>
-    <td>0</td>
-    <td>1</td>
-  </tr>
-  <tr>
-    <th>split 3</th>
-    <td>0</td>
-    <td>1</td>
-    <td>1</td>
-  </tr>
+	<tr> <td>&nbsp;</td> <th>dim 0</th> <th>dim 1</th> <th>dim 2</th> </tr>
+	<tr> <th>split 0</th> <td>1</td> <td>1</td> <td>0</td> </tr>
+	<tr> <th>split 1</th> <td>1</td> <td>0</td> <td>1</td> </tr>
+	<tr> <th>split 2</th> <td>0</td> <td>0</td> <td>1</td> </tr>
+	<tr> <th>split 3</th> <td>0</td> <td>1</td> <td>1</td> </tr>
 </table>
 </p><p>
 	This table holds an interesting insight: When we collect bits column-wise, per dimension (1100, 1001, 0111),
@@ -108,24 +82,42 @@ for (int dim = amount_of_dimensions - 1; dim > 0; dim -= 1) {
 	And the usage in practice would be like so:
 <pre><code class="c">int amount_of_splits = 0;
 for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
-	int power = log_2(dimension_sizes[dim])
+	int power = log_2(dimension_sizes[dim]);
 	if (power > amount_of_splits) amount_of_splits = power;
 }
 </code></pre>
-	It should be noted that when <code>amount_of_splits*amount_of_dimensions</code> exceeds 48, that means that
-	your array is too large to directly indexed by a modern x86-64 CPU. Depending on the array, this could be
-	partially mitigated by a more efficient packing (as we will see in the next chapter), but otherwise you will
-	have to resort to splitting your index across multiple pointers (and seperate arrays).
+	It should be noted that, if <code>amount_of_splits*amount_of_dimensions</code> exceeds 48,
+	your array is too large to be directly indexed by a modern x86-64 CPU. Depending on the
+	dimension sizes, this could be partially mitigated by a more efficient packing
+	(as we will see in the next chapter), but otherwise you will have to resort to splitting your
+	index (and array) across multiple pointers.
+</p><p>
+	Now that we have the amount of splits, we can convert standard coordinates to our BSP index:
+<pre><code class="c">int index = 0;
+for (int split = amount_of_splits; split &gt; 0; split += 1) {
+	int i = 0;
+	for (int dim = 0; dim &lt; amount_of_dimensions; dim += 1) {
+		int ii = 1 & (coordinate[dim] >> split);
+		i |= ii &lt;&lt; dim;
+	}
+	index &lt;&lt;= amount_of_dimensions;
+	index |= i;
+}
+</code></pre>
+	There is a ton of bitshifting and masking here, since we're essentially interleaving the coordinates into the single index.
 </p>
 	<h3>Dissimilar dimension sizes</h3>
 <p>
-	If <code>log2(smallest_dimension_size)</code> is very dissimilar from <code>log(largest_dimension_size)</code>,
-	many bits in the coarse splitting stages stay unused. This is partially because the most efficient packing possible
-	is actually based on the prime factors of each dimension size.
+	If <code>log_2(smallest_dimension_size)</code> is very dissimilar from <code>log_2(largest_dimension_size)</code>,
+	many bits in the coarse splitting stages stay unused. Our straightforward "concatenate all bits" approach is
+	<em>too</em> straightforward for these cases.
 </p><p>
 	Aside from being able to take advantage of bitshifts (an advantage not to be underappreciated), there is no strict reason
-	to split each dimensions in two. They could be split any number of ways, though if we want to avoid indexing with fractions,
-	the best we can do is splitting along prime factors. Let's take the following dimension sizes as an example: 525, 66, 2275.
+	to always split things in two. We could be splitting any number of ways, though if we want to avoid indexing with fractions,
+	the best we can do is splitting along prime factors. This significantly increases the complexity of both the math and the code,
+	and additionally adds a lot of integer divides to the program, but it's still interesting to look at.
+</p><p>
+	Let's take the following dimension sizes as an example: 525, 66, 2275.
 <!--2 5 5 7 ;
 2 3 11    ;
 5 5 7 13;-->
